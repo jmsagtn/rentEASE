@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="../images/banner.png" alt="RentEase Banner" width="100%">
+<img src="/Docs/images/banner.png" alt="RentEase Banner" width="100%">
 Your Personal Rentals Tracker
 
 *Smart renting made simple — manage your boarding house details with ease*
