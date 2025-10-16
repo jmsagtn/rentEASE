@@ -50,22 +50,5 @@ It allows users to add, view, edit, and delete rental records; providing a simpl
 
 ---
 
-## 💰 Market Context
-
-This CRUD prototype reflects the renter side of the **RentEase** startup concept — a proposed digital renting platform for Iloilo students.  
-While this version focuses on local data management, the full product vision includes verified listings, digital contracts, and online payments.
-
----
-
-## 🚀 Future Improvements
-
-- Add filtering and search functionality  
-- Add payment reminders using JavaScript alerts  
-- Integrate with a backend (e.g., Firebase or Node.js)  
-- Implement responsive mobile-friendly design  
-
----
-
-
 > “Because renting a place to live shouldn’t be stressful — it should be easy.”  
 > **RentEase: Renting Made Easy.**
