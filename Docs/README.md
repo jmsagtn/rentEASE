@@ -68,4 +68,4 @@ While this version focuses on local data management, the full product vision inc
 
 
 > “Because renting a place to live shouldn’t be stressful — it should be easy.”  
-> **RentEase: Smart renting made simple.**
+> **RentEase: Renting Made Easy.**
