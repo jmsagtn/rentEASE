@@ -1,7 +1,7 @@
 <div align="center">
 
 <img src="../images/banner.png" alt="RentEase Banner" width="100%">
-### Your Personal Rentals Tracker
+Your Personal Rentals Tracker
 
 *Smart renting made simple — manage your boarding house details with ease*
 
@@ -120,10 +120,10 @@ This application represents the renter-facing component of the **RentEase** star
 
 ##  Developer
 
-**Developed with  by [Your Name]**
+**Developed with  by Agustin, James Andrew | Catolin, Diether Jaye | Sirilan, Romyl Patrick**
 
-*Technopreneurship / IS Innovation Project*  
-*University Student — Iloilo City, Philippines*
+*Cloud Computing Project*  
+*West Visayas State University — CICT- BSIS*
 
 ---
 
