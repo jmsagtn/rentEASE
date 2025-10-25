@@ -133,6 +133,5 @@ This application represents the renter-facing component of the **RentEase** star
 
 **RentEase** — Simplifying student rentals, one boarding house at a time.
 
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 </div>
