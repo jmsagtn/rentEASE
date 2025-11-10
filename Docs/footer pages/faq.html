@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ - RentEase</title>
+  <link rel="icon" type="image/png" href="../images/Icon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    html, body {
+      background-color: #ffffff;
+      color: #1a2131;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Sidebar Styles */
+    aside {
+      width: 280px;
+      min-width: 280px;
+      background: linear-gradient(180deg, #1a2131 0%, #0f1419 100%);
+      border-right: 1px solid rgba(47, 196, 178, 0.2);
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+    }
+
+    aside::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="3" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/></svg>');
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .sidebar-header {
+      padding: 30px 25px 20px;
+      border-bottom: 1px solid rgba(47, 196, 178, 0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar-logo {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2fc4b2 0%, #a8edea 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 400;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 25px 0;
+      position: relative;
+      z-index: 1;
+      overflow-y: auto;
+    }
+
+    aside ul {
+      list-style-type: none;
+      padding: 0 15px;
+    }
+
+    aside li {
+      margin-bottom: 4px;
+    }
+
+    aside li strong {
+      display: block;
+      padding: 12px 15px 8px;
+      color: #2fc4b2;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+    
+    aside li:first-child strong {
+      margin-top: 0;
+    }
+
+    aside a {
+      text-decoration: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      font-size: 14px;
+      display: block;
+      padding: 10px 15px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    aside a::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: #2fc4b2;
+      border-radius: 0 3px 3px 0;
+      transition: height 0.3s ease;
+    }
+
+    aside a:hover {
+      color: #ffffff;
+      background: rgba(47, 196, 178, 0.1);
+      transform: translateX(5px);
+    }
+
+    aside a:hover::before {
+      height: 70%;
+    }
+
+    aside a.active {
+      color: #2fc4b2;
+      background: rgba(47, 196, 178, 0.15);
+      font-weight: 600;
+    }
+
+    aside a.active::before {
+      height: 70%;
+    }
+
+    .sidebar-footer {
+      padding: 20px 25px;
+      border-top: 1px solid rgba(47, 196, 178, 0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .back-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: rgba(47, 196, 178, 0.1);
+      border: 1px solid rgba(47, 196, 178, 0.3);
+      border-radius: 10px;
+      color: #2fc4b2;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+      background: rgba(47, 196, 178, 0.2);
+      border-color: #2fc4b2;
+      transform: translateX(-3px);
+    }
+
+    /* Main Content Styles */
+    main {
+      flex-grow: 1;
+      padding: 40px 60px;
+      background-color: #f8f9fa;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .content-header {
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .content-header h1 {
+      font-size: 36px;
+      font-weight: 800;
+      color: #1a2131;
+      margin-bottom: 10px;
+      letter-spacing: -1px;
+    }
+
+    .content-subtitle {
+      font-size: 16px;
+      color: #6b7280;
+      font-weight: 400;
+    }
+
+    section {
+      background: white;
+      border-radius: 16px;
+      padding: 35px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      transition: all 0.3s ease;
+    }
+
+    section:hover {
+      box-shadow: 0 8px 25px rgba(47, 196, 178, 0.15);
+      border-color: rgba(47, 196, 178, 0.3);
+    }
+
+    section h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a2131;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    section h2::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(180deg, #2fc4b2 0%, #107266 100%);
+      border-radius: 2px;
+    }
+
+    section p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #4b5563;
+      text-align: justify;
+    }
+
+    /* Highlight Box */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(47, 196, 178, 0.1) 0%, rgba(16, 114, 102, 0.1) 100%);
+      border-left: 4px solid #2fc4b2;
+      padding: 20px 25px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .highlight-box p {
+      margin: 0;
+      color: #1a2131;
+      font-weight: 500;
+    }
+
+    /* FAQ Category Badge */
+    .faq-category {
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(47, 196, 178, 0.15) 0%, rgba(16, 114, 102, 0.15) 100%);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #107266;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid rgba(47, 196, 178, 0.3);
+      margin-bottom: 25px;
+    }
+
+    /* FAQ Accordion Items */
+    .faq-accordion {
+      margin: 20px 0;
+    }
+
+    .faq-item {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .faq-item:hover {
+      border-color: #2fc4b2;
+      box-shadow: 0 4px 15px rgba(47, 196, 178, 0.1);
+    }
+
+    .faq-question {
+      padding: 20px 25px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a2131;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    .faq-question:hover {
+      background: rgba(47, 196, 178, 0.05);
+      color: #2fc4b2;
+    }
+
+    .faq-icon {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2fc4b2;
+      transition: transform 0.3s ease;
+    }
+
+    .faq-item.active .faq-icon {
+      transform: rotate(45deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      padding: 0 25px;
+    }
+
+    .faq-item.active .faq-answer {
+      max-height: 500px;
+      padding: 0 25px 20px;
+    }
+
+    .faq-answer p {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.7;
+      text-align: left;
+      margin: 0;
+    }
+
+    /* Quick Links */
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin: 25px 0;
+    }
+
+    .quick-link-card {
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 25px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: block;
+    }
+
+    .quick-link-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(47, 196, 178, 0.2);
+      border-color: #2fc4b2;
+    }
+
+    .quick-link-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    .quick-link-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a2131;
+      margin-bottom: 8px;
+    }
+
+    .quick-link-card p {
+      font-size: 14px;
+      color: #6b7280;
+      text-align: left;
+      margin: 0;
+    }
+
+    /* Search Box */
+    .search-box {
+      background: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+      transition: all 0.3s ease;
+    }
+
+    .search-box:focus-within {
+      border-color: #2fc4b2;
+      box-shadow: 0 0 0 3px rgba(47, 196, 178, 0.1);
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      color: #1a2131;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .search-box input::placeholder {
+      color: #9ca3af;
+    }
+
+    .search-icon {
+      color: #6b7280;
+      font-size: 18px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      aside {
+        width: 240px;
+      }
+
+      main {
+        padding: 30px 40px;
+      }
+
+      .quick-links {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      aside {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid rgba(47, 196, 178, 0.2);
+      }
+
+      main {
+        height: auto;
+        padding: 20px;
+      }
+
+      .content-header h1 {
+        font-size: 28px;
+      }
+
+      section {
+        padding: 25px;
+      }
+
+      .quick-links {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* User Select Prevention */
+    .nocopy {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+  </style>
+</head>
+<body class="nocopy">
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <aside>
+      <div class="sidebar-header">
+        <div class="sidebar-logo">RentEase</div>
+        <div class="sidebar-subtitle">Documentation</div>
+      </div>
+
+      <div class="sidebar-nav">
+        <ul>
+          <li><strong>Product</strong></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="faq.html" class="active">FAQ</a></li>
+
+          <li><strong>Company</strong></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="team.html">Team</a></li>
+          <li><a href="contact.html">Contact</a></li>
+
+          <li><strong>Legal</strong></li>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="terms.html">Terms</a></li>
+          <li><a href="security.html">Security</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <a href="../index.html" class="back-button">
+          <span>←</span>
+          <span>Back to Home</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-header">
+        <h1>Frequently Asked Questions</h1>
+        <p class="content-subtitle">Find answers to common questions about RentEase</p>
+      </div>
+
+      <section>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search for answers..." id="faqSearch">
+        </div>
+
+        <p>
+          Can't find what you're looking for? Browse through our frequently asked questions below, or <a href="contact.html" style="color: #2fc4b2; text-decoration: none; font-weight: 600;">contact our support team</a> for personalized assistance.
+        </p>
+      </section>
+
+      <section>
+        <span class="faq-category">Getting Started</span>
+        
+        <div class="faq-accordion">
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>How do I create an account?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Creating an account is simple! Click the "Get Started" button on our homepage, fill in your basic information (name, email, password), and verify your email address. Once verified, you can immediately start adding your properties and tenants. The entire process takes less than 2 minutes.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Is there a free trial available?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Yes! We offer a 14-day free trial for our Professional and Enterprise plans. No credit card is required to start your trial. You'll have full access to all features during the trial period. The Starter plan is free forever with basic features.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>How do I add my first property?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>After logging in, go to the Dashboard and click "Add Property". Fill in the property details including name, address, number of units, and monthly rent. You can also upload photos and documents. Once saved, you can start adding tenants to that property.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>What information can I track for each tenant?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>You can track comprehensive tenant information including contact details, lease start/end dates, monthly rent amount, payment history, outstanding balances, documents (IDs, contracts), and notes. All information is securely stored and easily accessible.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="faq-category">Payments & Billing</span>
+        
+        <div class="faq-accordion">
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>How do I track tenant payments?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>RentEase provides an easy payment tracking system. When a tenant pays, simply mark the payment as received in the system. You can view payment history, outstanding balances, and generate reports. The dashboard shows you at a glance who has paid and who hasn't.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Can tenants pay directly through the platform?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>This feature is currently in development and will be available soon. For now, RentEase serves as a tracking and management tool. Tenants make payments through your preferred method (cash, bank transfer, etc.), and you record them in the system.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>What payment methods do you accept for subscriptions?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>We accept all major credit cards (Visa, Mastercard, American Express), debit cards, and GCash. All payments are processed securely through our trusted payment partner. You'll receive email receipts for all transactions.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Will I be charged if I cancel during the trial?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>No! Your trial is completely free with no obligations. If you cancel before the trial ends, you won't be charged anything. You can cancel anytime through your account settings or by contacting support.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="faq-category">Features & Functionality</span>
+        
+        <div class="faq-accordion">
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Can I manage multiple properties?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Yes! All plans support multiple properties. The Starter plan allows up to 5 properties, Professional up to 20, and Enterprise offers unlimited properties. You can easily switch between properties and view consolidated reports across all locations.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Does RentEase work on mobile devices?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Absolutely! RentEase is fully responsive and works seamlessly on desktop, tablet, and mobile devices. Access your rental information from anywhere using any modern web browser. A dedicated mobile app is coming soon!</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Can I export my data?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Yes! Professional and Enterprise plans include data export features. You can export reports, payment histories, and tenant information in PDF and Excel formats. This is useful for accounting, tax purposes, or creating backups.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Do you offer SMS or email notifications?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>SMS and email notifications are available on Professional and Enterprise plans. You'll receive automatic notifications for important events like payment confirmations, overdue reminders, and lease expiration alerts.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="faq-category">Security & Privacy</span>
+        
+        <div class="faq-accordion">
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Is my data safe and secure?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Yes! We take security very seriously. All data is encrypted in transit (using SSL/TLS) and at rest. We use industry-standard security measures, perform regular backups, and store data in secure cloud servers. We never share your data with third parties.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>What happens to my data if I cancel?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Your data remains accessible until the end of your billing period. Before cancelling, you can export all your information. After 30 days of account closure, data is permanently deleted from our servers according to our privacy policy.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Do you comply with data protection regulations?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Yes! RentEase complies with Philippine data protection laws and international best practices. We have a comprehensive privacy policy and data protection measures in place. You maintain full ownership of your data at all times.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Are regular backups performed?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Yes! We perform automatic daily backups of all data. In the unlikely event of data loss, we can restore your information. Multiple backup copies are stored in different secure locations for maximum reliability.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="faq-category">Account Management</span>
+        
+        <div class="faq-accordion">
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>How do I upgrade or downgrade my plan?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>You can change your plan anytime from your account settings. Go to "Billing" and select "Change Plan". Upgrades take effect immediately, while downgrades take effect at the end of your current billing period. We'll prorate any charges accordingly.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Can I cancel my subscription anytime?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Yes! You can cancel your subscription at any time with no cancellation fees or penalties. Your account will remain active until the end of your billing period. You can reactivate your account anytime by resubscribing.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>How do I reset my password?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Click "Forgot Password" on the login page, enter your email address, and we'll send you a password reset link. Follow the link to create a new password. For security reasons, the link expires after 1 hour.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span>Can multiple users access the same account?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              <p>Multi-user access is available on Enterprise plans. This allows you to grant team members or staff access to manage properties while maintaining control over permissions. Contact sales for more information about multi-user features.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Quick Help Links</h2>
+        
+        <div class="quick-links">
+          <a href="features.html" class="quick-link-card">
+            <div class="quick-link-icon">📋</div>
+            <h3>View All Features</h3>
+            <p>Explore everything RentEase has to offer</p>
+          </a>
+
+          <a href="pricing.html" class="quick-link-card">
+            <div class="quick-link-icon">💰</div>
+            <h3>See Pricing Plans</h3>
+            <p>Compare plans and find the right fit</p>
+          </a>
+
+          <a href="contact.html" class="quick-link-card">
+            <div class="quick-link-icon">💬</div>
+            <h3>Contact Support</h3>
+            <p>Get help from our friendly team</p>
+          </a>
+
+          <a href="about.html" class="quick-link-card">
+            <div class="quick-link-icon">ℹ️</div>
+            <h3>About RentEase</h3>
+            <p>Learn about our mission and story</p>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2>Still Need Help?</h2>
+        <p>
+          If you couldn't find the answer you're looking for, our support team is ready to assist you. We're here to ensure you have the best experience with RentEase.
+        </p>
+
+        <div class="highlight-box" style="margin-top: 20px;">
+          <p>
+            <strong>📧 Email Support:</strong> support@rentease.com<br>
+            <strong>📞 Phone Support:</strong> +63 912 345 6789 (Mon-Fri, 9AM-5PM PHT)<br>
+            <strong>💬 Live Chat:</strong> Available on our website during business hours<br><br>
+            Average response time: 24-48 hours for email, immediate for live chat
+          </p>
+        </div>
+
+        <p style="margin-top: 20px;">
+          You can also check out our <a href="features.html" style="color: #2fc4b2; text-decoration: none; font-weight: 600;">detailed features documentation</a> or browse through our <a href="about.html" style="color: #2fc4b2; text-decoration: none; font-weight: 600;">about page</a> to learn more about RentEase.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // FAQ Accordion Toggle
+    function toggleFAQ(element) {
+      const faqItem = element.parentElement;
+      const isActive = faqItem.classList.contains('active');
+      
+      // Close all FAQ items
+      document.querySelectorAll('.faq-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Open clicked item if it wasn't active
+      if (!isActive) {
+        faqItem.classList.add('active');
+      }
+    }
+
+    // Search functionality
+    document.getElementById('faqSearch').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const faqItems = document.querySelectorAll('.faq-item');
+      
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question').textContent.toLowerCase();
+        const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+        
+        if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

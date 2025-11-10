@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service - RentEase</title>
+  <link rel="icon" type="image/png" href="../images/Icon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    html, body {
+      background-color: #ffffff;
+      color: #1a2131;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Sidebar Styles */
+    aside {
+      width: 280px;
+      min-width: 280px;
+      background: linear-gradient(180deg, #1a2131 0%, #0f1419 100%);
+      border-right: 1px solid rgba(47, 196, 178, 0.2);
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+    }
+
+    aside::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="3" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/></svg>');
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .sidebar-header {
+      padding: 30px 25px 20px;
+      border-bottom: 1px solid rgba(47, 196, 178, 0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar-logo {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2fc4b2 0%, #a8edea 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 400;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 25px 0;
+      position: relative;
+      z-index: 1;
+      overflow-y: auto;
+    }
+
+    aside ul {
+      list-style-type: none;
+      padding: 0 15px;
+    }
+
+    aside li {
+      margin-bottom: 4px;
+    }
+
+    aside li strong {
+      display: block;
+      padding: 12px 15px 8px;
+      color: #2fc4b2;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+    
+    aside li:first-child strong {
+      margin-top: 0;
+    }
+
+    aside a {
+      text-decoration: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      font-size: 14px;
+      display: block;
+      padding: 10px 15px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    aside a::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: #2fc4b2;
+      border-radius: 0 3px 3px 0;
+      transition: height 0.3s ease;
+    }
+
+    aside a:hover {
+      color: #ffffff;
+      background: rgba(47, 196, 178, 0.1);
+      transform: translateX(5px);
+    }
+
+    aside a:hover::before {
+      height: 70%;
+    }
+
+    aside a.active {
+      color: #2fc4b2;
+      background: rgba(47, 196, 178, 0.15);
+      font-weight: 600;
+    }
+
+    aside a.active::before {
+      height: 70%;
+    }
+
+    .sidebar-footer {
+      padding: 20px 25px;
+      border-top: 1px solid rgba(47, 196, 178, 0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .back-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: rgba(47, 196, 178, 0.1);
+      border: 1px solid rgba(47, 196, 178, 0.3);
+      border-radius: 10px;
+      color: #2fc4b2;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+      background: rgba(47, 196, 178, 0.2);
+      border-color: #2fc4b2;
+      transform: translateX(-3px);
+    }
+
+    /* Main Content Styles */
+    main {
+      flex-grow: 1;
+      padding: 40px 60px;
+      background-color: #f8f9fa;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .content-header {
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .content-header h1 {
+      font-size: 36px;
+      font-weight: 800;
+      color: #1a2131;
+      margin-bottom: 10px;
+      letter-spacing: -1px;
+    }
+
+    .content-subtitle {
+      font-size: 16px;
+      color: #6b7280;
+      font-weight: 400;
+    }
+
+    .last-updated {
+      display: inline-block;
+      background: rgba(47, 196, 178, 0.1);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #107266;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    section {
+      background: white;
+      border-radius: 16px;
+      padding: 35px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      transition: all 0.3s ease;
+    }
+
+    section:hover {
+      box-shadow: 0 8px 25px rgba(47, 196, 178, 0.15);
+      border-color: rgba(47, 196, 178, 0.3);
+    }
+
+    section h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a2131;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    section h2::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(180deg, #2fc4b2 0%, #107266 100%);
+      border-radius: 2px;
+    }
+
+    section h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a2131;
+      margin-top: 20px;
+      margin-bottom: 12px;
+    }
+
+    section p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #4b5563;
+      text-align: justify;
+      margin-bottom: 15px;
+    }
+
+    section p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Highlight Box */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(47, 196, 178, 0.1) 0%, rgba(16, 114, 102, 0.1) 100%);
+      border-left: 4px solid #2fc4b2;
+      padding: 20px 25px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .highlight-box p {
+      margin: 0;
+      color: #1a2131;
+      font-weight: 500;
+    }
+
+    /* Terms List */
+    .terms-list {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0;
+    }
+
+    .terms-list li {
+      padding: 12px 0;
+      padding-left: 30px;
+      position: relative;
+      font-size: 15px;
+      color: #4b5563;
+      line-height: 1.7;
+    }
+
+    .terms-list li::before {
+      content: '•';
+      position: absolute;
+      left: 10px;
+      color: #2fc4b2;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    /* Numbered List */
+    .numbered-list {
+      counter-reset: item;
+      list-style: none;
+      padding: 0;
+      margin: 15px 0;
+    }
+
+    .numbered-list li {
+      padding: 12px 0 12px 40px;
+      position: relative;
+      font-size: 15px;
+      color: #4b5563;
+      line-height: 1.7;
+      counter-increment: item;
+    }
+
+    .numbered-list li::before {
+      content: counter(item);
+      position: absolute;
+      left: 0;
+      top: 12px;
+      background: linear-gradient(135deg, #2fc4b2 0%, #107266 100%);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* Warning Box */
+    .warning-box {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+      border-left: 4px solid #ef4444;
+      padding: 20px 25px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .warning-box p {
+      margin: 0;
+      color: #991b1b;
+      font-weight: 500;
+    }
+
+    /* Info Box */
+    .info-box {
+      background: #f8f9fa;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px 25px;
+      margin: 20px 0;
+    }
+
+    .info-box h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a2131;
+      margin-bottom: 10px;
+    }
+
+    .info-box p {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.7;
+      margin: 0;
+      text-align: left;
+    }
+
+    /* Table of Contents */
+    .toc {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+
+    .toc h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a2131;
+      margin-bottom: 15px;
+      margin-top: 0;
+    }
+
+    .toc ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .toc li {
+      margin-bottom: 10px;
+    }
+
+    .toc a {
+      color: #2fc4b2;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .toc a:hover {
+      text-decoration: underline;
+      color: #107266;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      aside {
+        width: 240px;
+      }
+
+      main {
+        padding: 30px 40px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      aside {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid rgba(47, 196, 178, 0.2);
+      }
+
+      main {
+        height: auto;
+        padding: 20px;
+      }
+
+      .content-header h1 {
+        font-size: 28px;
+      }
+
+      section {
+        padding: 25px;
+      }
+    }
+
+    /* User Select Prevention */
+    .nocopy {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+  </style>
+</head>
+<body class="nocopy">
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <aside>
+      <div class="sidebar-header">
+        <div class="sidebar-logo">RentEase</div>
+        <div class="sidebar-subtitle">Documentation</div>
+      </div>
+
+      <div class="sidebar-nav">
+        <ul>
+          <li><strong>Product</strong></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+
+          <li><strong>Company</strong></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="team.html">Team</a></li>
+          <li><a href="contact.html">Contact</a></li>
+
+          <li><strong>Legal</strong></li>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="terms.html" class="active">Terms</a></li>
+          <li><a href="security.html">Security</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <a href="../index.html" class="back-button">
+          <span>←</span>
+          <span>Back to Home</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-header">
+        <h1>Terms of Service</h1>
+        <p class="content-subtitle">Please read these terms carefully before using RentEase</p>
+        <span class="last-updated">Last Updated: November 9, 2025</span>
+      </div>
+
+      <section>
+        <div class="toc">
+          <h3>Table of Contents</h3>
+          <ul>
+            <li><a href="#agreement">1. Agreement to Terms</a></li>
+            <li><a href="#account">2. Account Registration and Security</a></li>
+            <li><a href="#use-license">3. Use License and Restrictions</a></li>
+            <li><a href="#subscription">4. Subscription and Payment</a></li>
+            <li><a href="#user-content">5. User Content and Data</a></li>
+            <li><a href="#prohibited">6. Prohibited Activities</a></li>
+            <li><a href="#intellectual">7. Intellectual Property Rights</a></li>
+            <li><a href="#termination">8. Termination</a></li>
+            <li><a href="#warranties">9. Disclaimers and Warranties</a></li>
+            <li><a href="#liability">10. Limitation of Liability</a></li>
+            <li><a href="#indemnification">11. Indemnification</a></li>
+            <li><a href="#modifications">12. Modifications to Service</a></li>
+            <li><a href="#governing-law">13. Governing Law</a></li>
+            <li><a href="#contact-terms">14. Contact Information</a></li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="agreement">
+        <h2>1. Agreement to Terms</h2>
+        <p>
+          Welcome to RentEase! These Terms of Service ("Terms") constitute a legally binding agreement between you ("User," "you," or "your") and RentEase ("we," "us," or "our") regarding your use of the RentEase platform, including our website, mobile applications, and related services (collectively, the "Service").
+        </p>
+        <p>
+          By accessing or using RentEase, you acknowledge that you have read, understood, and agree to be bound by these Terms. If you do not agree to these Terms, you may not access or use the Service.
+        </p>
+
+        <div class="warning-box">
+          <p>
+            <strong>⚠️ Important:</strong> These Terms include provisions that limit our liability and require you to resolve disputes with us through arbitration on an individual basis, not as part of any class or representative action.
+          </p>
+        </div>
+      </section>
+
+      <section id="account">
+        <h2>2. Account Registration and Security</h2>
+        
+        <h3>2.1 Account Creation</h3>
+        <p>
+          To use certain features of RentEase, you must create an account. You agree to:
+        </p>
+        <ul class="terms-list">
+          <li>Provide accurate, current, and complete information during registration</li>
+          <li>Maintain and promptly update your account information</li>
+          <li>Be at least 18 years of age or the age of legal majority in your jurisdiction</li>
+          <li>Have the legal capacity to enter into these Terms</li>
+          <li>Not impersonate any person or entity or misrepresent your affiliation</li>
+        </ul>
+
+        <h3>2.2 Account Security</h3>
+        <p>
+          You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to:
+        </p>
+        <ul class="terms-list">
+          <li>Use a strong, unique password for your account</li>
+          <li>Not share your password with any third party</li>
+          <li>Immediately notify us of any unauthorized use of your account</li>
+          <li>Log out of your account at the end of each session</li>
+        </ul>
+
+        <p>
+          RentEase will not be liable for any loss or damage arising from your failure to maintain account security.
+        </p>
+      </section>
+
+      <section id="use-license">
+        <h2>3. Use License and Restrictions</h2>
+        
+        <h3>3.1 License Grant</h3>
+        <p>
+          Subject to your compliance with these Terms, we grant you a limited, non-exclusive, non-transferable, revocable license to access and use the Service for your personal or business rental management purposes.
+        </p>
+
+        <h3>3.2 Restrictions</h3>
+        <p>
+          You agree not to:
+        </p>
+        <ul class="terms-list">
+          <li>Copy, modify, or create derivative works based on the Service</li>
+          <li>Reverse engineer, decompile, or disassemble any part of the Service</li>
+          <li>Remove, alter, or obscure any proprietary notices on the Service</li>
+          <li>Use the Service for any illegal or unauthorized purpose</li>
+          <li>Attempt to gain unauthorized access to any portion of the Service</li>
+          <li>Use any automated system to access the Service without our permission</li>
+          <li>Interfere with or disrupt the integrity or performance of the Service</li>
+          <li>Transmit any viruses, malware, or other harmful code</li>
+        </ul>
+      </section>
+
+      <section id="subscription">
+        <h2>4. Subscription and Payment</h2>
+        
+        <h3>4.1 Subscription Plans</h3>
+        <p>
+          RentEase offers various subscription plans, including free and paid tiers. The features, limitations, and pricing for each plan are described on our pricing page at <a href="pricing.html" style="color: #2fc4b2; text-decoration: none; font-weight: 600;">www.rentease.com/pricing</a>.
+        </p>
+
+        <h3>4.2 Payment Terms</h3>
+        <ul class="terms-list">
+          <li><strong>Billing:</strong> Paid subscriptions are billed in advance on a monthly or annual basis, depending on your selected plan.</li>
+          <li><strong>Payment Method:</strong> You must provide valid payment information and authorize us to charge your payment method.</li>
+          <li><strong>Auto-Renewal:</strong> Subscriptions automatically renew at the end of each billing period unless cancelled.</li>
+          <li><strong>Price Changes:</strong> We reserve the right to modify subscription prices with 30 days' notice.</li>
+          <li><strong>Refunds:</strong> Subscription fees are non-refundable except as required by law or as stated in our refund policy.</li>
+        </ul>
+
+        <h3>4.3 Free Trial</h3>
+        <p>
+          We may offer a free trial for certain subscription plans. You will not be charged during the trial period. If you do not cancel before the trial ends, you will be automatically charged for the subscription.
+        </p>
+
+        <h3>4.4 Cancellation</h3>
+        <p>
+          You may cancel your subscription at any time through your account settings. Cancellation takes effect at the end of your current billing period, and you will retain access until that date.
+        </p>
+      </section>
+
+      <section id="user-content">
+        <h2>5. User Content and Data</h2>
+        
+        <h3>5.1 Your Content</h3>
+        <p>
+          "User Content" refers to all information, data, text, and files you upload, submit, or transmit through the Service, including property information, tenant data, and payment records.
+        </p>
+
+        <h3>5.2 Ownership</h3>
+        <p>
+          You retain all ownership rights to your User Content. By using the Service, you grant us a limited license to use, store, and process your User Content solely to provide and improve the Service.
+        </p>
+
+        <h3>5.3 Responsibility</h3>
+        <p>
+          You are solely responsible for your User Content and the consequences of posting or sharing it. You represent and warrant that:
+        </p>
+        <ul class="terms-list">
+          <li>You own or have the necessary rights to your User Content</li>
+          <li>Your User Content does not violate any third-party rights</li>
+          <li>Your User Content complies with applicable laws and regulations</li>
+          <li>Your User Content does not contain harmful, offensive, or illegal material</li>
+        </ul>
+
+        <h3>5.4 Data Backup</h3>
+        <p>
+          While we perform regular backups, you are responsible for maintaining your own backup copies of your User Content. We are not liable for any loss or corruption of your data.
+        </p>
+      </section>
+
+      <section id="prohibited">
+        <h2>6. Prohibited Activities</h2>
+        <p>
+          You may not use the Service for any unlawful purpose or in any way that violates these Terms. Specifically, you agree not to:
+        </p>
+
+        <ol class="numbered-list">
+          <li>Violate any local, state, national, or international law or regulation</li>
+          <li>Infringe on the intellectual property rights of others</li>
+          <li>Harass, abuse, or harm another person or entity</li>
+          <li>Submit false, inaccurate, or misleading information</li>
+          <li>Upload or transmit viruses, malware, or any malicious code</li>
+          <li>Spam, solicit, or contact other users for commercial purposes</li>
+          <li>Collect or harvest personal information from other users</li>
+          <li>Use the Service to store or transmit illegal content</li>
+          <li>Interfere with security features or circumvent access restrictions</li>
+          <li>Engage in any activity that disrupts or negatively affects the Service</li>
+        </ol>
+
+        <div class="warning-box">
+          <p>
+            <strong>Violation Consequences:</strong> Violation of these prohibitions may result in immediate account termination, legal action, and reporting to law enforcement authorities.
+          </p>
+        </div>
+      </section>
+
+      <section id="intellectual">
+        <h2>7. Intellectual Property Rights</h2>
+        
+        <h3>7.1 Our Intellectual Property</h3>
+        <p>
+          The Service, including its design, features, functionality, text, graphics, logos, and software, is owned by RentEase and protected by copyright, trademark, and other intellectual property laws. All rights not expressly granted are reserved.
+        </p>
+
+        <h3>7.2 Trademarks</h3>
+        <p>
+          "RentEase" and associated logos are trademarks of RentEase. You may not use our trademarks without our prior written consent.
+        </p>
+
+        <h3>7.3 Feedback</h3>
+        <p>
+          If you provide us with feedback, suggestions, or ideas about the Service, you grant us the right to use, modify, and incorporate such feedback without any obligation to you.
+        </p>
+      </section>
+
+      <section id="termination">
+        <h2>8. Termination</h2>
+        
+        <h3>8.1 Termination by You</h3>
+        <p>
+          You may terminate your account at any time by contacting us at support@rentease.com or through your account settings. Upon termination, your right to use the Service will immediately cease.
+        </p>
+
+        <h3>8.2 Termination by Us</h3>
+        <p>
+          We reserve the right to suspend or terminate your account and access to the Service at any time, with or without notice, for:
+        </p>
+        <ul class="terms-list">
+          <li>Violation of these Terms</li>
+          <li>Fraudulent, abusive, or illegal activity</li>
+          <li>Non-payment of subscription fees</li>
+          <li>Extended periods of inactivity</li>
+          <li>Any other reason at our sole discretion</li>
+        </ul>
+
+        <h3>8.3 Effect of Termination</h3>
+        <p>
+          Upon termination, your User Content will be retained for 30 days to allow for data export. After 30 days, all data will be permanently deleted. Provisions of these Terms that by their nature should survive termination will continue to apply.
+        </p>
+      </section>
+
+      <section id="warranties">
+        <h2>9. Disclaimers and Warranties</h2>
+        
+        <div class="info-box">
+          <h4>AS-IS Service</h4>
+          <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY LAW, WE DISCLAIM ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
+        </div>
+
+        <p>
+          We do not warrant that:
+        </p>
+        <ul class="terms-list">
+          <li>The Service will meet your specific requirements</li>
+          <li>The Service will be uninterrupted, timely, secure, or error-free</li>
+          <li>Results obtained from using the Service will be accurate or reliable</li>
+          <li>Defects or errors will be corrected</li>
+          <li>The Service is free from viruses or other harmful components</li>
+        </ul>
+
+        <p>
+          You use the Service at your own risk. We are not responsible for any loss of data, profits, or business opportunities resulting from your use of the Service.
+        </p>
+      </section>
+
+      <section id="liability">
+        <h2>10. Limitation of Liability</h2>
+        
+        <div class="warning-box">
+          <p>
+            <strong>IMPORTANT LIABILITY LIMITATION:</strong> TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL RENTEASE, ITS DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION LOSS OF PROFITS, DATA, USE, OR GOODWILL, ARISING OUT OF YOUR USE OR INABILITY TO USE THE SERVICE.
+          </p>
+        </div>
+
+        <p>
+          Our total liability to you for all claims arising from or related to the Service shall not exceed the amount you paid us in the twelve (12) months preceding the claim, or ₱1,000, whichever is greater.
+        </p>
+
+        <p>
+          Some jurisdictions do not allow the exclusion or limitation of certain damages, so some of the above limitations may not apply to you.
+        </p>
+      </section>
+
+      <section id="indemnification">
+        <h2>11. Indemnification</h2>
+        <p>
+          You agree to indemnify, defend, and hold harmless RentEase, its affiliates, officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses, including reasonable attorneys' fees, arising out of or in any way connected with:
+        </p>
+
+        <ul class="terms-list">
+          <li>Your access to or use of the Service</li>
+          <li>Your violation of these Terms</li>
+          <li>Your violation of any third-party right, including intellectual property or privacy rights</li>
+          <li>Your User Content</li>
+          <li>Any harm caused by your actions to other users or third parties</li>
+        </ul>
+
+        <p>
+          This indemnification obligation will survive the termination of your account and these Terms.
+        </p>
+      </section>
+
+      <section id="modifications">
+        <h2>12. Modifications to Service</h2>
+        
+        <h3>12.1 Service Changes</h3>
+        <p>
+          We reserve the right to modify, suspend, or discontinue any part of the Service at any time, with or without notice. We may also impose limits on certain features or restrict access to parts or all of the Service.
+        </p>
+
+        <h3>12.2 Terms Updates</h3>
+        <p>
+          We may update these Terms from time to time. When we make material changes, we will:
+        </p>
+        <ul class="terms-list">
+          <li>Update the "Last Updated" date at the top of these Terms</li>
+          <li>Notify you via email or through a notice on the Service</li>
+          <li>Provide you with a reasonable opportunity to review the changes</li>
+        </ul>
+
+        <p>
+          Your continued use of the Service after changes take effect constitutes acceptance of the updated Terms. If you do not agree to the changes, you must stop using the Service and cancel your account.
+        </p>
+      </section>
+
+      <section id="governing-law">
+        <h2>13. Governing Law and Dispute Resolution</h2>
+        
+        <h3>13.1 Governing Law</h3>
+        <p>
+          These Terms shall be governed by and construed in accordance with the laws of the Republic of the Philippines, without regard to its conflict of law provisions.
+        </p>
+
+        <h3>13.2 Dispute Resolution</h3>
+        <p>
+          In the event of any dispute, controversy, or claim arising out of or relating to these Terms or the Service, you agree to first attempt to resolve the dispute informally by contacting us at legal@rentease.com. We will attempt to resolve the dispute informally within 60 days.
+        </p>
+
+        <h3>13.3 Jurisdiction</h3>
+        <p>
+          If informal resolution is unsuccessful, you agree that any legal action or proceeding shall be brought exclusively in the courts located in Iloilo City, Philippines, and you consent to the personal jurisdiction of such courts.
+        </p>
+
+        <h3>13.4 Class Action Waiver</h3>
+        <p>
+          You agree that any dispute resolution proceedings will be conducted only on an individual basis and not in a class, consolidated, or representative action. You waive any right to participate in a class action lawsuit or class-wide arbitration.
+        </p>
+      </section>
+
+      <section id="contact-terms">
+        <h2>14. Contact Information</h2>
+        <p>
+          If you have any questions about these Terms, please contact us:
+        </p>
+
+        <div class="highlight-box">
+          <p>
+            <strong>📧 Legal Inquiries:</strong> legal@rentease.com<br>
+            <strong>📧 General Support:</strong> support@rentease.com<br>
+            <strong>📞 Phone:</strong> +63 912 345 6789<br>
+            <strong>📍 Address:</strong> West Visayas State University, College of ICT, Luna Street, Iloilo City, Philippines
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Additional Terms</h2>
+        
+        <h3>Severability</h3>
+        <p>
+          If any provision of these Terms is found to be unenforceable or invalid, that provision will be limited or eliminated to the minimum extent necessary so that these Terms will otherwise remain in full force and effect.
+        </p>
+
+        <h3>Entire Agreement</h3>
+        <p>
+          These Terms, together with our Privacy Policy and any other legal notices published by us on the Service, constitute the entire agreement between you and RentEase concerning the Service.
+        </p>
+
+        <h3>Assignment</h3>
+        <p>
+          You may not assign or transfer these Terms or your rights under these Terms without our prior written consent. We may assign these Terms without restriction.
+        </p>
+
+        <h3>Waiver</h3>
+        <p>
+          Our failure to enforce any right or provision of these Terms will not be deemed a waiver of such right or provision. A waiver of any term will not be deemed a continuing waiver of such term or any other term.
+        </p>
+
+        <h3>Force Majeure</h3>
+        <p>
+          We shall not be liable for any failure or delay in performance due to circumstances beyond our reasonable control, including acts of God, natural disasters, war, terrorism, riots, government actions, internet service failures, or technical problems.
+        </p>
+      </section>
+
+      <section>
+        <h2>Acknowledgment</h2>
+        <p>
+          By using RentEase, you acknowledge that:
+        </p>
+
+        <ul class="terms-list">
+          <li>You have read and understood these Terms of Service</li>
+          <li>You agree to be bound by these Terms</li>
+          <li>You are legally capable of entering into binding contracts</li>
+          <li>You will use the Service in compliance with all applicable laws</li>
+          <li>You understand the limitations of liability and warranty disclaimers</li>
+        </ul>
+
+        <div class="info-box">
+          <h4>Questions or Concerns?</h4>
+          <p>If you have any questions about these Terms or need clarification on any provision, please don't hesitate to contact our legal team at legal@rentease.com. We're here to help ensure you understand your rights and obligations.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Related Legal Documents</h2>
+        <p>
+          For complete information about our policies and practices, please also review:
+        </p>
+
+        <ul class="terms-list">
+          <li><a href="privacy.html" style="color: #2fc4b2; text-decoration: none; font-weight: 600;">Privacy Policy</a> - How we collect, use, and protect your data</li>
+          <li><a href="security.html" style="color: #2fc4b2; text-decoration: none; font-weight: 600;">Security Policy</a> - Our security measures and best practices</li>
+          <li><a href="faq.html" style="color: #2fc4b2; text-decoration: none; font-weight: 600;">FAQ</a> - Frequently asked questions about our service</li>
+          <li><a href="contact.html" style="color: #2fc4b2; text-decoration: none; font-weight: 600;">Contact Us</a> - Get in touch with our support team</li>
+        </ul>
+
+        <div class="highlight-box" style="margin-top: 25px;">
+          <p>
+            <strong>💡 Important Reminder:</strong> These Terms form a legally binding contract. Please save or print a copy for your records. If you continue to use RentEase after we post changes to these Terms, you accept the modified Terms.
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
