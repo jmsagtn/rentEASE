@@ -106,12 +106,12 @@
             color: #fff !important;
             font-weight: 600;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(80, 80, 80, 0.4);
         }
 
         .nav-cta:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 2px 12px rgba(35, 255, 218, 0.6);
         }
 
         /* Hero Section */
@@ -346,8 +346,8 @@
 
         .feature-card:hover {
             transform: translateY(-10px);
-            border-color: rgba(102, 126, 234, 0.5);
-            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+            border-color: #ffffff93;
+            box-shadow: 0 20px 40px rgba(255, 255, 255, 0.171);
         }
 
         .feature-card:hover::before {
