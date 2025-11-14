@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tenants - RentEase</title>
+  <link rel="icon" type="image/png" href="images/Icon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/tenants.css" />
+
+</head>
+
+<body>
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <aside>
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <img src="images/rentease.svg" alt="RentEase">
+        </div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Loading...</div>
+          <div class="user-email" id="user-email">Loading...</div>
+          <span class="plan-badge" id="plan-badge">Freemium</span>
+        </div>
+      </div>
+
+      <div class="sidebar-nav">
+        <ul>
+          <li><a href="dashboard.html">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+          </a></li>
+          <li><a href="properties.html">
+            <span class="nav-icon">🏠</span>
+            <span>Properties</span>
+          </a></li>
+          <li><a href="tenants.html" class="active">
+            <span class="nav-icon">👥</span>
+            <span>Tenants</span>
+          </a></li>
+          <li><a href="rent-tracker.html">
+            <span class="nav-icon">💰</span>
+            <span>Rent Tracker</span>
+          </a></li>
+          <li><a href="profile.html">
+            <span class="nav-icon">⚙️</span>
+            <span>Profile / Settings</span>
+          </a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-button" id="logout-btn">
+          <span>🚪</span>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+      <div class="dashboard-header">
+        <div>
+          <h1>My Tenants</h1>
+          <p class="dashboard-subtitle">Manage your tenants <span id="tenant-count-text">(0 tenants)</span></p>
+        </div>
+        <button class="action-btn" id="add-tenant-btn" style="width: auto;">
+          <span>👤</span>
+          <span>Add New Tenant</span>
+        </button>
+      </div>
+
+      <div id="message" class="message"></div>
+
+      <!-- Tenants Container -->
+      <div id="tenants-container">
+        <div class="empty-state">
+          <div class="empty-state-icon">👥</div>
+          <h3>No tenants yet</h3>
+          <p>Start by adding your first tenant</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Tenant Modal - UPDATED IDs -->
+  <div class="tenant-modal-overlay" id="tenant-modal">
+    <div class="tenant-modal">
+      <div class="tenant-modal-header">
+        <h2 id="modal-title">Add New Tenant</h2>
+        <button class="tenant-close-modal" id="close-modal">&times;</button>
+      </div>
+      
+      <form id="tenant-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tenant-firstname">First Name *</label>
+            <input type="text" id="tenant-firstname" placeholder="John" required>
+          </div>
+
+          <div class="form-group">
+            <label for="tenant-lastname">Last Name *</label>
+            <input type="text" id="tenant-lastname" placeholder="Doe" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="tenant-email">Email Address *</label>
+          <input type="email" id="tenant-email" placeholder="john.doe@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="tenant-phone">Phone Number *</label>
+          <input type="tel" id="tenant-phone" placeholder="+639123456789" required>
+        </div>
+
+        <div class="form-group">
+          <label for="tenant-property">Property *</label>
+          <select id="tenant-property" required>
+            <option value="">Select a property</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="tenant-unit">Unit/Room Number *</label>
+          <input type="text" id="tenant-unit" placeholder="e.g., Room 101" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tenant-rent">Monthly Rent (₱) *</label>
+            <input type="number" id="tenant-rent" placeholder="5000" min="0" required>
+          </div>
+
+          <div class="form-group">
+            <label for="tenant-deposit">Security Deposit (₱)</label>
+            <input type="number" id="tenant-deposit" placeholder="10000" min="0">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tenant-movein">Move-in Date *</label>
+            <input type="date" id="tenant-movein" required>
+          </div>
+
+          <div class="form-group">
+            <label for="tenant-lease-end">Lease End Date</label>
+            <input type="date" id="tenant-lease-end">
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submit-tenant-btn">
+          Add Tenant
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="js/tenants.js"></script>
+</body>
+</html>

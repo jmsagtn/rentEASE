@@ -406,6 +406,8 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
+
+
         /* CTA Section */
         .cta-section {
             padding: 8rem 5%;
@@ -464,6 +466,424 @@
         .cta-box .btn:hover {
             background: rgba(255, 255, 255, 0.95);
         }
+
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    border-radius: 24px;
+    padding: 48px 40px;
+    max-width: 1100px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 10000;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal.active .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: #f3f4f6;
+    border-radius: 50%;
+    font-size: 24px;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10001;
+}
+
+.modal-close:hover {
+    background: #e5e7eb;
+    color: #374151;
+    transform: rotate(90deg);
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.modal-header h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #117c6f;
+    margin-bottom: 12px;
+}
+
+.modal-header p {
+    font-size: 1.125rem;
+    color: #6b7280;
+}
+
+.pricing-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+    margin-top: 40px;
+}
+
+.pricing-card {
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 32px 28px;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.pricing-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px -12px rgba(17, 124, 111, 0.15);
+    border-color: #8de5db;
+}
+
+.pricing-card.featured {
+    border: 2px solid #117c6f;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fffe 100%);
+    transform: scale(1.05);
+}
+
+.pricing-card.featured:hover {
+    transform: scale(1.05) translateY(-8px);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #117c6f 0%, #289c8e 100%);
+    color: white;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(17, 124, 111, 0.3);
+}
+
+.plan-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.plan-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #117c6f;
+    margin-bottom: 16px;
+}
+
+.plan-price {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.plan-price .currency {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #289c8e;
+    margin-top: 8px;
+}
+
+.plan-price .amount {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #117c6f;
+    line-height: 1;
+    margin: 0 4px;
+}
+
+.plan-price .period {
+    font-size: 1rem;
+    color: #6b7280;
+    align-self: flex-end;
+    margin-bottom: 12px;
+}
+
+.plan-description {
+    font-size: 0.95rem;
+    color: #6b7280;
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 32px 0;
+    flex-grow: 1;
+}
+
+.plan-features li {
+    padding: 12px 0;
+    color: #374151;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.plan-features .check {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #2fc4b2 0%, #8de5db 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.plan-button {
+    width: 100%;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.basic-button {
+    background: #f3f4f6;
+    color: #117c6f;
+}
+
+.basic-button:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.pro-button {
+    background: linear-gradient(135deg, #117c6f 0%, #289c8e 100%);
+    color: white;
+    box-shadow: 0 8px 20px rgba(17, 124, 111, 0.3);
+}
+
+.pro-button:hover {
+    background: linear-gradient(135deg, #0d5f54 0%, #1f7c70 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(17, 124, 111, 0.4);
+}
+
+.enterprise-button {
+    background: linear-gradient(135deg, #2fc4b2 0%, #8de5db 100%);
+    color: #117c6f;
+    font-weight: 700;
+}
+
+.enterprise-button:hover {
+    background: linear-gradient(135deg, #25a595 0%, #7cd4cc 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(47, 196, 178, 0.3);
+}
+
+/* Scrollbar styling for modal */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #8de5db;
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #2fc4b2;
+}
+
+/* Custom Toast Notification */
+.custom-toast {
+    position: fixed;
+    top: 24px;
+    left: 35%;
+    transform: translate(-50%, -200%); /* start off-screen */
+    background: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(17, 124, 111, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 350px;
+    max-width: 450px;
+    z-index: 10002;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.custom-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #2fc4b2 0%, #8de5db 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+    animation: scaleIn 0.4s ease;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+        rotate: -180deg;
+    }
+    100% {
+        transform: scale(1);
+        rotate: 0deg;
+    }
+}
+
+.toast-content {
+    flex-grow: 1;
+}
+
+.toast-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #117c6f;
+    margin-bottom: 4px;
+}
+
+.toast-message {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.toast-message strong {
+    color: #289c8e;
+    font-weight: 600;
+}
+
+.toast-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f3f4f6;
+    border-radius: 8px;
+    font-size: 20px;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.toast-close:hover {
+    background: #e5e7eb;
+    color: #374151;
+    transform: rotate(90deg);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .custom-toast {
+        top: 16px;
+        right: 16px;
+        left: 16px;
+        min-width: auto;
+        max-width: none;
+    }
+
+    .modal-content {
+        padding: 32px 24px;
+        width: 95%;
+    }
+
+    .modal-header h2 {
+        font-size: 2rem;
+    }
+
+    .pricing-cards {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .pricing-card.featured {
+        transform: scale(1);
+    }
+
+    .pricing-card.featured:hover {
+        transform: translateY(-8px);
+    }
+
+    .plan-price .amount {
+        font-size: 2.5rem;
+    }
+}
+        
 
         /* Footer */
         footer {

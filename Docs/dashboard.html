@@ -1,116 +1,267 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="css/dashboard.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <title>Dashboard - RentEase</title>
+    <link rel="icon" type="image/png" href="images/Icon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="css/dashboard.css" />
+  </head>
 
-
-</head>
 <body>
-    <nav class="navbar">
-        <div class="nav-content">
-            <div class="logo">Dashboard</div>
-            <ul class="nav-links">
-                <li><a href="#" class="active">Overview</a></li>
-                <li><a href="#">Properties</a></li>
-                <li><a href="#">Tenants</a></li>
-                <li><a href="#">Reports</a></li>
-                <li><a href="#">Profile</a></li>
-
-            </ul>
-            <div class="user-profile">
-                <div class="avatar">JD</div>
-                <span style="font-weight: 600; color: #2d3748;">Lessor</span>
-            </div>
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <aside>
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <img src="images/rentease.svg" alt="RentEase">
         </div>
-    </nav>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Loading...</div>
+          <div class="user-email" id="user-email">Loading...</div>
+          <span class="plan-badge" id="plan-badge">Free</span>
+        </div>
+      </div>
 
-    <div class="container">
-        <div class="header">
-            <h1>Dashboard Overview</h1>
+      <div class="sidebar-nav">
+        <ul>
+          <li><a href="dashboard.html" class="active">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+          </a></li>
+          <li><a href="properties.html" id="nav-properties">
+            <span class="nav-icon">🏠</span>
+            <span>Properties</span>
+          </a></li>
+          <li><a href="tenants.html" id="nav-tenants">
+            <span class="nav-icon">👥</span>
+            <span>Tenants</span>
+          </a></li>
+          <li><a href="rent-tracker.html" id="nav-rent">
+            <span class="nav-icon">💰</span>
+            <span>Rent Tracker</span>
+          </a></li>
+          <li><a href="profile.html">
+            <span class="nav-icon">⚙️</span>
+            <span>Profile / Settings</span>
+          </a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-button" id="logout-btn">
+          <span>🚪</span>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Dashboard Content -->
+    <main>
+      <div class="dashboard-header">
+        <h1 id="welcome-message">Welcome back! 👋</h1>
+        <p class="dashboard-subtitle">Here's what's happening with your rental properties today</p>
+      </div>
+
+      <!-- Upgrade Banner (shown for freemium/premium users) -->
+      <div class="upgrade-banner" id="upgrade-banner">
+        <div>
+          <strong>🚀 Upgrade Your Plan</strong>
+          <p style="margin: 4px 0 0 0; font-size: 14px;">Unlock more properties and unlimited units!</p>
+        </div>
+            <button class="upgrade-btn">Upgrade Now</button>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Total Likes</span>
-                    <div class="stat-icon icon-blue">❤️</div>
-                </div>
-                <div class="stat-value">45,231</div>
-                <div class="stat-change">↗ +12.5% from last month</div>
-            </div>
+      <!-- Limit Warning -->
+      <div class="limit-warning" id="limit-warning"></div>
 
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">New Followers</span>
-                    <div class="stat-icon icon-green">👥</div>
-                </div>
-                <div class="stat-value">2,345</div>
-                <div class="stat-change">↗ +8.2% from last month</div>
+      <!-- Stats Overview -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-number" id="total-properties">0</div>
+              <div class="stat-label">Total Properties <span id="property-limit-text"></span></div>
             </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Engagement Rate</span>
-                    <div class="stat-icon icon-orange">📊</div>
-                </div>
-                <div class="stat-value">8.5%</div>
-                <div class="stat-change">↗ +3.2% from last week</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Total Shares</span>
-                    <div class="stat-icon icon-red">🔄</div>
-                </div>
-                <div class="stat-value">1,820</div>
-                <div class="stat-change negative">↘ -2.3% from last month</div>
-            </div>
+            <div class="stat-icon">🏠</div>
+          </div>
+          <div class="stat-change" id="property-change">No properties yet</div>
         </div>
 
-        <div class="charts-grid">
-            <div class="chart-card">
-                <h2 class="card-title">Likes Over Time (Bar Chart)</h2>
-                <div class="chart-container small">
-                    <canvas id="barChart"></canvas>
-                </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-number" id="active-tenants">0</div>
+              <div class="stat-label">Active Tenants</div>
+            </div>
+            <div class="stat-icon">👥</div>
+          </div>
+          <div class="stat-change" id="tenant-change">No tenants yet</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-number" id="monthly-revenue">₱0</div>
+              <div class="stat-label">Monthly Revenue</div>
+            </div>
+            <div class="stat-icon">💰</div>
+          </div>
+          <div class="stat-change" id="revenue-change">No revenue yet</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-number" id="pending-payments">0</div>
+              <div class="stat-label">Pending Payments</div>
+            </div>
+            <div class="stat-icon">⏰</div>
+          </div>
+          <div class="stat-change" id="payment-change">All clear</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header">
+          <h2 class="card-title">Quick Actions</h2>
+        </div>
+        <div class="quick-actions">
+          <button class="action-btn" id="add-property-btn">
+            <span>➕</span>
+            <span>Add New Property</span>
+          </button>
+          <button class="action-btn" id="add-tenant-btn">
+            <span>👤</span>
+            <span>Add New Tenant</span>
+          </button>
+          <button class="action-btn secondary" id="record-payment-btn">
+            <span>💵</span>
+            <span>Record Payment</span>
+          </button>
+          <button class="action-btn secondary" id="generate-report-btn">
+            <span>📊</span>
+            <span>Generate Report</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Grid -->
+      <div class="content-grid">
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Recent Activity</h2>
+            <a href="#" class="card-action">View All →</a>
+          </div>
+          <ul class="activity-list" id="activity-list">
+            <li class="activity-item">
+              <div class="activity-icon">📝</div>
+              <div class="activity-content">
+                <div class="activity-title">Welcome to RentEase!</div>
+                <div class="activity-details">Start by adding your first property</div>
+                <div class="activity-time">Just now</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Upcoming Payments -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Upcoming Payments</h2>
+            <a href="rent-tracker.html" class="card-action">View All →</a>
+          </div>
+          <ul class="payment-list" id="payment-list">
+            <li class="activity-item" style="text-align: center; padding: 40px;">
+              <div style="font-size: 48px; margin-bottom: 12px;">💰</div>
+              <div class="activity-details">No upcoming payments</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Properties Overview -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Your Properties</h2>
+          <a href="properties.html" class="card-action">View All →</a>
+        </div>
+        <div class="properties-grid" id="properties-grid">
+          <div style="text-align: center; padding: 60px; grid-column: 1/-1;">
+            <div style="font-size: 64px; margin-bottom: 16px;">🏠</div>
+            <h3 style="margin: 0 0 8px 0; color: #333;">No properties yet</h3>
+            <p style="color: #666; margin: 0 0 20px 0;">Click "Add New Property" to get started</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+
+      <!-- Pricing Modal -->
+    <div id="pricingModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="closeModal">&times;</button>
+            
+            <div class="modal-header">
+                <h2>Choose Your Plan</h2>
+                <p>Select the perfect plan for your rental management needs</p>
             </div>
 
-            <div class="chart-card">
-                <h2 class="card-title">Engagement Distribution (Pie Chart)</h2>
-                <div class="chart-container small">
-                    <canvas id="pieChart"></canvas>
-                </div>
-            </div>
+            <div class="pricing-cards">
+   
 
-            <div class="chart-card large">
-                <h2 class="card-title">Monthly Performance (Line Chart)</h2>
-                <div class="chart-container">
-                    <canvas id="lineChart"></canvas>
+                <!-- Pro Plan -->
+                <div class="pricing-card featured">
+                    <div class="popular-badge">Most Popular</div>
+                    <div class="plan-header">
+                        <h3>Pro</h3>
+                        <div class="plan-price">
+                            <span class="currency">₱</span>
+                            <span class="amount">499</span>
+                            <span class="period">/month</span>
+                        </div>
+                        <p class="plan-description">For growing landlords</p>
+                    </div>
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> Up to 20 properties</li>
+                        <li><span class="check">✓</span> Advanced payment tracking</li>
+                        <li><span class="check">✓</span> Automated reminders</li>
+                        <li><span class="check">✓</span> Financial reports</li>
+                        <li><span class="check">✓</span> Priority support</li>
+                    </ul>
+                    <button class="plan-button pro-button">Recommended</button>
                 </div>
-            </div>
 
-            <div class="chart-card">
-                <h2 class="card-title">Weekly Stats (Column Chart)</h2>
-                <div class="chart-container small">
-                    <canvas id="columnChart"></canvas>
-                </div>
-            </div>
-
-            <div class="chart-card">
-                <h2 class="card-title">Growth Trend (Area Line Chart)</h2>
-                <div class="chart-container small">
-                    <canvas id="areaChart"></canvas>
+                <!-- Enterprise Plan -->
+                <div class="pricing-card">
+                    <div class="plan-header">
+                        <h3>Premium</h3>
+                        <div class="plan-price">
+                            <span class="currency">₱</span>
+                            <span class="amount">999</span>
+                            <span class="period">/month</span>
+                        </div>
+                        <p class="plan-description">For property managers</p>
+                    </div>
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> Unlimited properties</li>
+                        <li><span class="check">✓</span> All Pro features</li>
+                        <li><span class="check">✓</span> Multi-user access</li>
+                        <li><span class="check">✓</span> Custom integrations</li>
+                        <li><span class="check">✓</span> 24/7 support</li>
+                    </ul>
+                    <button class="plan-button enterprise-button">Continue</button>
                 </div>
             </div>
         </div>
     </div>
 
-
-        <script src="js/dashboard.js"></script>
-
+  <script type="module" src="js/dashboard.js"></script>
 </body>
-</html>
+  
+  </html>
