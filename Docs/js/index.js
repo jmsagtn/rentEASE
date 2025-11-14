@@ -14,9 +14,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         const href = this.getAttribute('href');
         
         // Don't prevent default for modal triggers
-        if (this.id === 'navGetStarted' || this.id === 'heroGetStarted' || this.id === 'ctaGetStarted') {
+        if ( this.id === 'heroGetStarted' || this.id === 'ctaGetStarted') {
             e.preventDefault();
-            openModal();
+            // openModal();
+            window.location.href = '\sign_up.html';
+
             return;
         }
         

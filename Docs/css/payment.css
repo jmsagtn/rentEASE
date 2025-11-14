@@ -1,0 +1,465 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #117c6f 0%, #289c8e 50%, #2fc4b2 100%);
+    min-height: 100vh;
+    padding: 40px 20px;
+}
+
+.main-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Plan Invoice Styles */
+.plan-invoice {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 2px solid #2fc4b2;
+    width: 100%;
+    max-width: 100%;
+}
+
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 15px;
+    border-bottom: 2px dashed #e5e7eb;
+}
+
+.invoice-header h3 {
+    font-size: 16px;
+    color: #117c6f;
+    font-weight: 700;
+}
+
+.invoice-badge {
+    background: linear-gradient(135deg, #117c6f 0%, #2fc4b2 100%);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.invoice-details {
+    display: grid;
+    gap: 10px;
+}
+
+.invoice-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+}
+
+.invoice-label {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.invoice-value {
+    font-size: 13px;
+    color: #1a2131;
+    font-weight: 600;
+}
+
+.invoice-features {
+    background: #f8f9fa;
+    padding: 14px;
+    border-radius: 10px;
+    margin: 8px 0;
+}
+
+.invoice-features .invoice-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #117c6f;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.invoice-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.invoice-features li {
+    padding: 5px 0;
+    padding-left: 20px;
+    position: relative;
+    font-size: 12px;
+    color: #374151;
+}
+
+.invoice-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #2fc4b2;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.invoice-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    padding-top: 18px;
+    border-top: 2px dashed #e5e7eb;
+    margin-top: 8px;
+}
+
+.total-label {
+    font-size: 15px;
+    color: #117c6f;
+    font-weight: 700;
+}
+
+.total-amount {
+    font-size: 22px;
+    color: #117c6f;
+    font-weight: 800;
+}
+
+/* Main Container for Card and Form */
+.container {
+    max-width: 900px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+    margin: 0 auto;
+}
+
+.card-preview {
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.credit-card {
+    width: 100%;
+    height: 220px;
+    background: linear-gradient(135deg, #117c6f 0%, #289c8e 100%);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.credit-card.flipped {
+    transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    padding: 25px;
+    backface-visibility: hidden;
+    border-radius: 16px;
+}
+
+.card-back {
+    background: linear-gradient(135deg, #117c6f 0%, #289c8e 100%);
+    transform: rotateY(180deg);
+}
+
+.chip {
+    width: 45px;
+    height: 35px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border-radius: 8px;
+    margin-bottom: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+.chip::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.2);
+    top: 33%;
+}
+
+.chip::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.2);
+    top: 66%;
+}
+
+.card-number {
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.card-holder, .card-expiry {
+    color: #fff;
+}
+
+.label {
+    font-size: 10px;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.value {
+    font-size: 14px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.magnetic-strip {
+    width: 100%;
+    height: 50px;
+    background: #000;
+    margin: 20px 0;
+}
+
+.cvv-section {
+    background: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: right;
+    margin-top: 20px;
+}
+
+.cvv-label {
+    font-size: 10px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.cvv-value {
+    font-size: 18px;
+    color: #000;
+    letter-spacing: 3px;
+}
+
+.payment-form {
+    background: #fff;
+    padding: 65px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+h2 {
+    color: #117c6f;
+    margin-bottom: 8px;
+    font-size: 28px;
+}
+
+.form-subtitle {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    color: #117c6f;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #b2f0e8;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s;
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+}
+
+input:focus {
+    outline: none;
+    border-color: #2fc4b2;
+    box-shadow: 0 0 0 4px rgba(47, 196, 178, 0.1);
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #117c6f 0%, #2fc4b2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(17, 124, 111, 0.4);
+}
+
+.submit-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-loader {
+    display: inline-block;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.card-type {
+    position: absolute;
+    right: 25px;
+    top: 25px;
+    width: 55px;
+    height: 35px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #fff;
+    font-size: 11px;
+}
+
+.input-error {
+    border-color: #ff4444 !important;
+    animation: shake 0.3s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.success-message, .error-message {
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+    text-align: center;
+    font-weight: 600;
+    display: none;
+}
+
+.success-message {
+    background: #8de5db;
+    color: #117c6f;
+}
+
+.error-message {
+    background: #fee;
+    color: #c00;
+}
+
+.secure-badge {
+    text-align: center;
+    color: #6b7280;
+    font-size: 13px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 20px 15px;
+    }
+
+    .container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .card-preview {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .credit-card {
+        max-width: 100%;
+    }
+
+    .payment-form {
+        padding: 30px 25px;
+    }
+
+    .plan-invoice {
+        padding: 20px;
+        max-width: 100%;
+    }
+
+    .invoice-header h3 {
+        font-size: 15px;
+    }
+
+    .total-amount {
+        font-size: 20px;
+    }
+}

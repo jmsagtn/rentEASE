@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Details - RentEase</title>
+    <link rel="icon" type="image/png" href="images/Icon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/payment.css" />
+</head>
+<body>
+    <div class="main-container">
+
+
+        
+        <!-- Selected Plan Invoice -->
+        <div class="container">
+            <div class="card-preview">
+                <div class="credit-card" id="creditCard">
+                    <div class="card-front">
+                        <div class="chip"></div>
+                        <div class="card-type" id="cardType">CARD</div>
+                        <div class="card-number" id="displayNumber">#### #### #### ####</div>
+                        <div class="card-details">
+                            <div class="card-holder">
+                                <div class="label">Card Holder</div>
+                                <div class="value" id="displayName">YOUR NAME</div>
+                            </div>
+                            <div class="card-expiry">
+                                <div class="label">Expires</div>
+                                <div class="value" id="displayExpiry">MM/YY</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="magnetic-strip"></div>
+                        <div class="cvv-section">
+                            <div class="cvv-label">CVV</div>
+                            <div class="cvv-value" id="displayCVV">***</div>
+                        </div>
+                    </div>
+                </div>
+
+        <div class="plan-invoice" id="planInvoice">
+            <div class="invoice-header">
+                <h3>Order Summary</h3>
+                <span class="invoice-badge" id="planBadge">Premium</span>
+            </div>
+            <div class="invoice-details">
+                <div class="invoice-row">
+                    <span class="invoice-label">Plan:</span>
+                    <span class="invoice-value" id="invoicePlanName">Premium Plan</span>
+                </div>
+                <div class="invoice-row">
+                    <span class="invoice-label">Billing Cycle:</span>
+                    <span class="invoice-value">Monthly</span>
+                </div>
+                <div class="invoice-features">
+                    <div class="invoice-label">Includes:</div>
+                    <ul id="invoiceFeatures">
+                        <li>Unlimited properties</li>
+                        <li>All Pro features</li>
+                        <li>Multi-user access</li>
+                    </ul>
+                </div>
+                <div class="invoice-total">
+                    <span class="total-label">Total Amount:</span>
+                    <span class="total-amount" id="invoiceTotal">₱999/month</span>
+                </div>
+            </div>
+        </div>
+     </div>
+
+
+            
+
+            <div class="payment-form">
+                <h2>💳 Payment Details</h2>
+                <p class="form-subtitle">Enter your card information to complete the upgrade</p>
+                
+                <form id="paymentForm">
+                    <div class="form-group">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cardName">Card Holder Name</label>
+                        <input type="text" id="cardName" placeholder="JOHN DOE" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="expiry">Expiry Date</label>
+                            <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" placeholder="123" maxlength="4" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span id="btnText">Process Payment</span>
+                        <span id="btnLoader" class="btn-loader" style="display: none;">Processing...</span>
+                    </button>
+                    
+                    <div class="success-message" id="successMessage">
+                        ✓ Payment processed successfully! Redirecting...
+                    </div>
+                    
+                    <div class="error-message" id="errorMessage">
+                        ✗ Payment failed. Please try again.
+                    </div>
+                </form>
+
+                <div class="secure-badge">
+                    🔒 Your payment information is secure and encrypted
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/payment.js"></script>
+</body>
+</html>

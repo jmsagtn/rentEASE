@@ -20,6 +20,22 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Plan limits configuration
+const PLAN_LIMITS = {
+  freemium: {
+    maxProperties: 2,
+    maxUnitsPerProperty: 4
+  },
+  premium: {
+    maxProperties: 10,
+    maxUnitsPerProperty: Infinity // unlimited
+  },
+  platinum: {
+    maxProperties: Infinity, // unlimited
+    maxUnitsPerProperty: Infinity // unlimited
+  }
+};
+
 const signupForm = document.getElementById("signup-form");
 const message = document.getElementById("message");
 const submitButton = signupForm.querySelector("button[type='submit']");
@@ -42,23 +58,30 @@ signupForm.addEventListener("submit", async (e) => {
   submitButton.textContent = "Creating account...";
 
   try {
-    // 1️⃣ Create user with Firebase Auth
+    // Create user with Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // 2️⃣ Store username in Firestore
+    // Store user data with freemium plan in Firestore
     await setDoc(doc(db, "users", user.uid), {
       username: username,
       email: email,
-      createdAt: new Date()
+      plan: "freemium", // Default plan
+      planStartDate: new Date(),
+      createdAt: new Date(),
+      // Usage tracking
+      propertiesCount: 0,
+      unitsCount: 0
     });
 
-    message.textContent = "🎉 Account created successfully!";
+    message.textContent = "🎉 Account created successfully! Starting with Freemium plan.";
     message.className = "message success";
     signupForm.reset();
 
-    // 3️⃣ Redirect after successful signup
-    window.location.href = "dashboard.html"; // change to your target page
+    // Redirect after successful signup
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 1500);
   } catch (error) {
     console.error("Error:", error);
 
