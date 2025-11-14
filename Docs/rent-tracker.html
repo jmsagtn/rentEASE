@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rent Tracker - RentEase</title>
+  <link rel="icon" type="image/png" href="images/Icon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/rent-tracker.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <aside>
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <img src="images/rentease.svg" alt="RentEase">
+        </div>
+        <div class="user-info">
+          <div class="user-name">John Doe</div>
+          <div class="user-email">john.doe@email.com</div>
+        </div>
+      </div>
+
+      <div class="sidebar-nav">
+        <ul>
+          <li><a href="dashboard.html">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+          </a></li>
+          <li><a href="properties.html">
+            <span class="nav-icon">🏠</span>
+            <span>Properties</span>
+          </a></li>
+          <li><a href="tenants.html">
+            <span class="nav-icon">👥</span>
+            <span>Tenants</span>
+          </a></li>
+          <li><a href="rent-tracker.html" class="active">
+            <span class="nav-icon">💰</span>
+            <span>Rent Tracker</span>
+          </a></li>
+          <li><a href="profile.html">
+            <span class="nav-icon">⚙️</span>
+            <span>Profile / Settings</span>
+          </a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-button">
+          <span>🚪</span>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+      <div class="page-header">
+        <div class="page-title-section">
+          <h1>Rent Tracker 💰</h1>
+          <p class="page-subtitle">Monitor and manage all rent payments</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary">
+            <span>📥</span>
+            <span>Export</span>
+          </button>
+          <button class="btn btn-primary">
+            <span>➕</span>
+            <span>Record Payment</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-number">₱85,000</div>
+              <div class="stat-label">Total Expected</div>
+            </div>
+            <div class="stat-icon">💵</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-number">₱72,500</div>
+              <div class="stat-label">Collected</div>
+            </div>
+            <div class="stat-icon">✅</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-number">₱12,500</div>
+              <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-icon">⏰</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-number">3</div>
+              <div class="stat-label">Overdue</div>
+            </div>
+            <div class="stat-icon">⚠️</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label class="filter-label">Status</label>
+          <select class="filter-select">
+            <option value="all">All Status</option>
+            <option value="paid">Paid</option>
+            <option value="pending">Pending</option>
+            <option value="overdue">Overdue</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Property</label>
+          <select class="filter-select">
+            <option value="all">All Properties</option>
+            <option value="1">Sunrise Apartments</option>
+            <option value="2">Green Hills Boarding</option>
+            <option value="3">Mango Avenue Units</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Month</label>
+          <select class="filter-select">
+            <option value="current">Current Month</option>
+            <option value="last">Last Month</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+
+        <div class="search-box">
+          <input type="text" class="search-input" placeholder="Search tenant or property...">
+        </div>
+      </div>
+
+      <!-- Payment Table -->
+      <div class="payment-table-card">
+        <div class="table-header">
+          <h2 class="table-title">Payment Records</h2>
+          <span class="table-count">48 records</span>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Tenant</th>
+              <th>Property</th>
+              <th>Amount</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="tenant-info">
+                  <div class="tenant-avatar">MS</div>
+                  <div class="tenant-details">
+                    <div class="tenant-name">Maria Santos</div>
+                    <div class="tenant-property">Room 150</div>
+                  </div>
+                </div>
+              </td>
+              <td>Sunrise Apartments</td>
+              <td><span class="amount">₱5,500</span></td>
+              <td>Nov 12, 2025</td>
+              <td><span class="status-badge status-overdue">Overdue</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn action-btn-mark">Mark Paid</button>
+                  <button class="action-btn action-btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="tenant-info">
+                  <div class="tenant-avatar">SV</div>
+                  <div class="tenant-details">
+                    <div class="tenant-name">Sofia Valdez</div>
+                    <div class="tenant-property">Room 201</div>
+                  </div>
+                </div>
+              </td>
+              <td>Green Hills Boarding</td>
+              <td><span class="amount">₱6,000</span></td>
+              <td>Nov 18, 2025</td>
+              <td><span class="status-badge status-pending">Pending</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn action-btn-mark">Mark Paid</button>
+                  <button class="action-btn action-btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="tenant-info">
+                  <div class="tenant-avatar">DR</div>
+                  <div class="tenant-details">
+                    <div class="tenant-name">David Ramos</div>
+                    <div class="tenant-property">Unit 1A</div>
+                  </div>
+                </div>
+              </td>
+              <td>Mango Avenue Units</td>
+              <td><span class="amount">₱7,500</span></td>
+              <td>Nov 5, 2025</td>
+              <td><span class="status-badge status-paid">Paid</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn action-btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Logout functionality
+    document.querySelector('.logout-button').addEventListener('click', function() {
+      if(confirm('Are you sure you want to logout?')) {
+        window.location.href = 'index.html';
+      }
+    });
+
+    // Mark as paid functionality
+    document.querySelectorAll('.action-btn-mark').forEach(button => {
+      button.addEventListener('click', function() {
+        if(confirm('Mark this payment as paid?')) {
+          const row = this.closest('tr');
+          const statusBadge = row.querySelector('.status-badge');
+          statusBadge.className = 'status-badge status-paid';
+          statusBadge.textContent = 'Paid';
+          
+          // Remove mark paid button
+          this.remove();
+          
+          alert('Payment marked as paid successfully!');
+        }
+      });
+    });
+
+    // View payment details
+    document.querySelectorAll('.action-btn-view').forEach(button => {
+      button.addEventListener('click', function() {
+        const row = this.closest('tr');
+        const tenantName = row.querySelector('.tenant-name').textContent;
+        const amount = row.querySelector('.amount').textContent;
+        const status = row.querySelector('.status-badge').textContent;
+        
+        alert(`Payment Details:\n\nTenant: ${tenantName}\nAmount: ${amount}\nStatus: ${status}`);
+      });
+    });
+
+    // Filter functionality
+    document.querySelectorAll('.filter-select').forEach(select => {
+      select.addEventListener('change', function() {
+        console.log(`Filter changed: ${this.value}`);
+        // Implement filter logic here
+      });
+    });
+
+    // Search functionality
+    document.querySelector('.search-input').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      
+      rows.forEach(row => {
+        const tenantName = row.querySelector('.tenant-name').textContent.toLowerCase();
+        const property = row.querySelectorAll('td')[1].textContent.toLowerCase();
+        
+        if (tenantName.includes(searchTerm) || property.includes(searchTerm)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+
+    // Record payment button
+    document.querySelector('.btn-primary').addEventListener('click', function() {
+      alert('Record Payment form will open here');
+      // Open modal or navigate to payment form
+    });
+
+    // Export button
+    document.querySelector('.btn-secondary').addEventListener('click', function() {
+      alert('Exporting payment data...');
+      // Implement export functionality
+    });
+  </script>
+</body>
+</html>
