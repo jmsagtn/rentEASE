@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -45,16 +45,41 @@ const invoiceTotal = document.getElementById('invoiceTotal');
 
 let currentUser = null;
 let selectedPlan = null;
+let existingCardData = null; // Store existing card info
 
 // Check authentication and load plan
 onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
+    loadUserCardData();
     loadSelectedPlan();
   } else {
     window.location.href = 'index.html';
   }
 });
+
+// Load existing card data from Firebase
+async function loadUserCardData() {
+  try {
+    const userRef = doc(db, "users", currentUser.uid);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists() && userDoc.data().paymentInfo) {
+      existingCardData = userDoc.data().paymentInfo;
+      console.log("Existing card found - verification required");
+      
+      // Show a message to user that they need to verify their existing card
+      const formSubtitle = document.querySelector('.form-subtitle');
+      formSubtitle.textContent = 'Verify your registered card to complete the upgrade';
+      formSubtitle.style.color = '#f59e0b';
+    } else {
+      console.log("No existing card - new card will be registered");
+      existingCardData = null;
+    }
+  } catch (error) {
+    console.error("Error loading card data:", error);
+  }
+}
 
 // Load selected plan from sessionStorage
 function loadSelectedPlan() {
@@ -134,6 +159,26 @@ cvv.addEventListener('input', (e) => {
     displayCVV.textContent = e.target.value || '***';
 });
 
+// Verify if entered card matches existing registered card
+function verifyExistingCard(enteredCardData) {
+  const enteredLast4 = enteredCardData.cardLastFour;
+  const enteredName = enteredCardData.cardHolderName.toUpperCase().trim();
+  const enteredExpiry = enteredCardData.expiryDate;
+  
+  const existingLast4 = existingCardData.cardLastFour;
+  const existingName = existingCardData.cardHolderName.toUpperCase().trim();
+  const existingExpiry = existingCardData.expiryDate;
+  
+  // All three must match: last 4 digits, cardholder name, and expiry date
+  const isMatch = (
+    enteredLast4 === existingLast4 &&
+    enteredName === existingName &&
+    enteredExpiry === existingExpiry
+  );
+  
+  return isMatch;
+}
+
 // Form validation and submission
 paymentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -191,7 +236,7 @@ paymentForm.addEventListener('submit', async (e) => {
     await processPayment();
 });
 
-// ✅ FIXED: Process payment using setDoc with merge option
+// Process payment with card verification
 async function processPayment() {
     try {
         submitBtn.disabled = true;
@@ -201,12 +246,50 @@ async function processPayment() {
         const cardNumberValue = cardNumber.value.replace(/\s/g, '');
         const last4Digits = cardNumberValue.slice(-4);
         
-        // ✅ Payment info WITHOUT plan field (no duplication)
+        // Prepare entered card data
+        const enteredCardData = {
+            cardLastFour: last4Digits,
+            cardHolderName: cardName.value,
+            cardType: cardType.textContent,
+            expiryDate: expiry.value
+        };
+        
+        // Check if user has existing card
+        if (existingCardData) {
+            // Verify if entered card matches existing card
+            const isCardValid = verifyExistingCard(enteredCardData);
+            
+            if (!isCardValid) {
+                // Card doesn't match - reject payment
+                errorMessage.textContent = '✗ Card verification failed. The entered card does not match your registered card.';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                
+                submitBtn.disabled = false;
+                btnText.style.display = 'inline-block';
+                btnLoader.style.display = 'none';
+                
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+                
+                return; // Stop processing
+            }
+            
+            // Card matches - proceed with plan upgrade only (don't update card info)
+            console.log("Card verified successfully - updating plan only");
+        } else {
+            // No existing card - this is a new card registration
+            console.log("Registering new card");
+        }
+        
+        // Payment info to store (only if new card, or to keep existing)
         const paymentInfo = {
             cardLastFour: last4Digits,
             cardHolderName: cardName.value,
             cardType: cardType.textContent,
             expiryDate: expiry.value,
+            cvv: cvv.value, // Store CVV for verification
             paymentDate: new Date(),
             amount: selectedPlan.price,
             currency: selectedPlan.currency
@@ -214,15 +297,27 @@ async function processPayment() {
         
         const userRef = doc(db, "users", currentUser.uid);
         
-        // ✅ Use setDoc with merge: true instead of updateDoc
-        // This works even if the document doesn't exist yet
-        await setDoc(userRef, {
-            plan: selectedPlan.name,  // ← Single source of truth
-            paymentInfo: paymentInfo,  // ← No plan field here
+        // Update data based on whether card exists
+        let updateData = {
+            plan: selectedPlan.name,
             planUpgradedAt: new Date()
-        }, { merge: true });  // ← This merges with existing data instead of overwriting
+        };
         
+        // Only update payment info if it's a new card (no existing card)
+        if (!existingCardData) {
+            updateData.paymentInfo = paymentInfo;
+        } else {
+            // Update payment date and amount for existing card
+            updateData['paymentInfo.paymentDate'] = new Date();
+            updateData['paymentInfo.amount'] = selectedPlan.price;
+            updateData['paymentInfo.currency'] = selectedPlan.currency;
+        }
         
+        await setDoc(userRef, updateData, { merge: true });
+        
+        successMessage.textContent = existingCardData 
+            ? '✓ Card verified! Payment processed successfully. Redirecting...'
+            : '✓ Card registered! Payment processed successfully. Redirecting...';
         successMessage.style.display = 'block';
         errorMessage.style.display = 'none';
         
