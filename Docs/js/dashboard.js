@@ -55,7 +55,6 @@ let charts = {
 let unsubscribers = {
   properties: null,
   tenants: null,
-  payments: null,
   activity: null
 };
 
@@ -121,7 +120,7 @@ async function loadUserData(uid) {
         if (userPlan === 'freemium') {
           bannerText.textContent = 'Unlock more properties and advanced features!';
         } else if (userPlan === 'premium') {
-          bannerText.textContent = 'Upgrade to Premium for unlimited properties!';
+          bannerText.textContent = 'Upgrade to Platinum for unlimited properties!';
         }
       } else {
         upgradeBanner.classList.add('hidden');
@@ -188,6 +187,90 @@ function applyPlanRestrictions(userData) {
   }
 }
 
+// Generate payments from tenants data
+function generatePaymentsFromTenants(tenants) {
+  const currentDate = new Date();
+  const payments = [];
+  
+  tenants.forEach(tenant => {
+    if (tenant.status === 'active' && tenant.moveInDate) {
+      const moveInDate = tenant.moveInDate.toDate ? tenant.moveInDate.toDate() : new Date(tenant.moveInDate);
+      const leaseEndDate = tenant.leaseEndDate?.toDate ? tenant.leaseEndDate.toDate() : new Date(2100, 0, 1);
+      
+      // Get the day of month when rent is due (from moveInDate)
+      const dueDay = moveInDate.getDate();
+      
+      // Calculate current month's due date
+      const currentMonthDueDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), dueDay);
+      
+      // If current month's due date has passed, check next month
+      const nextMonthDueDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, dueDay);
+      
+      // Determine if we should show current or next month's payment
+      let dueDate;
+      let status;
+      
+      if (currentDate < currentMonthDueDate) {
+        // Current month's payment is still upcoming
+        dueDate = currentMonthDueDate;
+        status = 'pending';
+      } else if (currentDate.getDate() === dueDay) {
+        // Today is the due date
+        dueDate = currentMonthDueDate;
+        status = 'pending';
+      } else {
+        // Current month's due date has passed
+        // Check if it's overdue (more than 5 days past due)
+        const daysPastDue = Math.floor((currentDate - currentMonthDueDate) / (1000 * 60 * 60 * 24));
+        
+        if (daysPastDue <= 5) {
+          // Still within grace period - show as pending
+          dueDate = currentMonthDueDate;
+          status = 'pending';
+        } else {
+          // Overdue - show as overdue
+          dueDate = currentMonthDueDate;
+          status = 'overdue';
+        }
+      }
+      
+      // Only include if the due date is within the lease period
+      if (dueDate >= moveInDate && dueDate <= leaseEndDate) {
+        payments.push({
+          id: `${tenant.id}_${dueDate.getTime()}`,
+          tenantId: tenant.id,
+          tenantName: `${tenant.firstName} ${tenant.lastName}`,
+          propertyId: tenant.propertyId,
+          unitNumber: tenant.unitNumber,
+          unitName: `Unit ${tenant.unitNumber}`,
+          amount: tenant.monthlyRent,
+          dueDate: dueDate,
+          status: status,
+          landlordId: tenant.landlordId
+        });
+      }
+      
+      // Also add next month's payment if current is not pending
+      if (status !== 'pending' && nextMonthDueDate <= leaseEndDate) {
+        payments.push({
+          id: `${tenant.id}_${nextMonthDueDate.getTime()}`,
+          tenantId: tenant.id,
+          tenantName: `${tenant.firstName} ${tenant.lastName}`,
+          propertyId: tenant.propertyId,
+          unitNumber: tenant.unitNumber,
+          unitName: `Unit ${tenant.unitNumber}`,
+          amount: tenant.monthlyRent,
+          dueDate: nextMonthDueDate,
+          status: 'pending',
+          landlordId: tenant.landlordId
+        });
+      }
+    }
+  });
+  
+  return payments;
+}
+
 // Real-time dashboard setup
 function setupRealtimeDashboard(uid) {
   const propertiesQuery = query(collection(db, "properties"), where("ownerId", "==", uid));
@@ -231,6 +314,12 @@ function setupRealtimeDashboard(uid) {
         }
       });
 
+      // Generate payments from tenants
+      chartData.payments = generatePaymentsFromTenants(chartData.tenants);
+      
+      // Count pending payments
+      const pendingCount = chartData.payments.filter(p => p.status === 'pending' || p.status === 'overdue').length;
+
       document.getElementById('active-tenants').textContent = tenantsCount;
       
       const tenantChange = document.getElementById('tenant-change');
@@ -245,39 +334,22 @@ function setupRealtimeDashboard(uid) {
       revenueChange.textContent = monthlyRevenue > 0 ? 'Expected this month' : 'No revenue yet';
       revenueChange.className = monthlyRevenue > 0 ? 'stat-change positive' : 'stat-change';
       
-      updateCharts();
-    },
-    (error) => console.error("Error loading tenants:", error)
-  );
-
-  // Load all payments for charts (not just pending)
-  const allPaymentsQuery = query(
-    collection(db, "payments"),
-    where("landlordId", "==", uid)
-  );
-  unsubscribers.payments = onSnapshot(
-    allPaymentsQuery, 
-    (snapshot) => {
-      chartData.payments = [];
-      let pendingCount = 0;
-      
-      snapshot.forEach(doc => {
-        const payment = doc.data();
-        chartData.payments.push({ id: doc.id, ...payment });
-        if (payment.status === 'pending') pendingCount++;
-      });
-      
+      // Update pending payments display
       document.getElementById('pending-payments').textContent = pendingCount;
       
       const paymentChange = document.getElementById('payment-change');
       paymentChange.textContent = pendingCount > 0 ? 'Action needed' : 'All clear';
       paymentChange.className = pendingCount > 0 ? 'stat-change negative' : 'stat-change';
       
-      // Load only pending payments in the list
-      loadPaymentsList(chartData.payments.filter(p => p.status === 'pending'));
+      // Load pending/overdue payments in the list
+      const upcomingPayments = chartData.payments
+        .filter(p => p.status === 'pending' || p.status === 'overdue')
+        .sort((a, b) => a.dueDate - b.dueDate);
+      
+      loadPaymentsList(upcomingPayments);
       updateCharts();
     },
-    (error) => console.error("Error loading payments:", error)
+    (error) => console.error("Error loading tenants:", error)
   );
 
   const activityQuery = query(
@@ -638,7 +710,7 @@ function generateCollectionData(monthsCount = 6) {
     
     // Count payments for this month
     const monthPayments = chartData.payments.filter(payment => {
-      const dueDate = payment.dueDate?.toDate ? payment.dueDate.toDate() : null;
+      const dueDate = payment.dueDate;
       if (!dueDate) return false;
       return dueDate >= monthStart && dueDate <= monthEnd;
     });
@@ -719,30 +791,48 @@ function loadPaymentsList(payments) {
     return;
   }
 
-  // Sort by due date
-  const sortedPayments = [...payments].sort((a, b) => {
-    const dateA = a.dueDate?.toDate ? a.dueDate.toDate() : new Date();
-    const dateB = b.dueDate?.toDate ? b.dueDate.toDate() : new Date();
-    return dateA - dateB;
-  });
-
   // Show only first 5
-  sortedPayments.slice(0, 5).forEach((payment) => {
+  payments.slice(0, 5).forEach((payment) => {
     const item = document.createElement('li');
     item.className = 'payment-item';
     
-    const dueDate = payment.dueDate?.toDate ? payment.dueDate.toDate() : new Date();
-    const isOverdue = dueDate < new Date();
+    const dueDate = payment.dueDate;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(dueDate);
+    due.setHours(0, 0, 0, 0);
+    
+    const isOverdue = due < today;
+    const isDueToday = due.getTime() === today.getTime();
     const amount = Number(payment.amount) || 0;
+    
+    let dueDateText;
+    if (isDueToday) {
+      dueDateText = 'Due Today';
+    } else if (isOverdue) {
+      const daysOverdue = Math.floor((today - due) / (1000 * 60 * 60 * 24));
+      dueDateText = `${daysOverdue} ${daysOverdue === 1 ? 'day' : 'days'} overdue`;
+    } else {
+      const daysUntilDue = Math.floor((due - today) / (1000 * 60 * 60 * 24));
+      if (daysUntilDue === 0) {
+        dueDateText = 'Due Today';
+      } else if (daysUntilDue === 1) {
+        dueDateText = 'Due Tomorrow';
+      } else if (daysUntilDue <= 7) {
+        dueDateText = `Due in ${daysUntilDue} days`;
+      } else {
+        dueDateText = `Due ${dueDate.toLocaleDateString()}`;
+      }
+    }
     
     item.innerHTML = `
       <div class="payment-header">
         <div class="payment-tenant">${escapeHtml(payment.tenantName || 'Unknown Tenant')}</div>
         <div class="payment-amount">₱${amount.toLocaleString()}</div>
       </div>
-      <div class="payment-info">${escapeHtml(payment.unitName || payment.unitNumber || 'Unit')} • Due ${dueDate.toLocaleDateString()}</div>
-      <span class="payment-status ${isOverdue ? 'status-overdue' : 'status-pending'}">
-        ${isOverdue ? 'Overdue' : 'Pending'}
+      <div class="payment-info">${escapeHtml(payment.unitName || payment.unitNumber || 'Unit')} • ${dueDateText}</div>
+      <span class="payment-status ${isOverdue ? 'status-overdue' : isDueToday ? 'status-pending' : 'status-pending'}">
+        ${isOverdue ? 'Overdue' : isDueToday ? 'Due Today' : 'Upcoming'}
       </span>
     `;
     list.appendChild(item);

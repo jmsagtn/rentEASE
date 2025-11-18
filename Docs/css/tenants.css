@@ -28,6 +28,23 @@
 }
 
 /* ==================== TENANT STATISTICS ==================== */
+.action-btnn{
+  margin: 20px 0px 0px 0px;
+  padding: 15px 20px;
+    background: linear-gradient(135deg, #2fc4b2 0%, #107266 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(47, 196, 178, 0.3);
+}
 
 .tenants-stats {
   display: grid;
@@ -37,6 +54,7 @@
 }
 
 .stat-box {
+  margin: 20px 10px 10px 0px;
   background: white;
   padding: 24px;
   border-radius: 16px;

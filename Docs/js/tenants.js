@@ -28,12 +28,12 @@ const PLAN_LIMITS = {
   premium: { 
     maxProperties: 20, 
     maxUnitsPerProperty: Infinity,
-    displayName: 'Pro'
+    displayName: 'Premium'
   },
   platinum: { 
     maxProperties: Infinity, 
     maxUnitsPerProperty: Infinity,
-    displayName: 'Premium'
+    displayName: 'Platinum'
   }
 };
 
@@ -60,8 +60,10 @@ let charts = {
 const DOM = {
   modal: document.getElementById('tenant-modal'),
   detailsModal: document.getElementById('tenant-details-modal'),
+  expiringLeasesModal: document.getElementById('expiring-leases-modal'),
   closeModalBtn: document.getElementById('close-modal'),
   closeDetailsModalBtn: document.getElementById('close-details-modal'),
+  closeExpiringModalBtn: document.getElementById('close-expiring-modal'),
   cancelBtn: document.getElementById('cancel-btn'),
   addTenantBtn: document.getElementById('add-tenant-btn'),
   tenantForm: document.getElementById('tenant-form'),
@@ -79,7 +81,9 @@ const DOM = {
   userEmail: document.getElementById('user-email'),
   planBadge: document.getElementById('plan-badge'),
   tenantCountText: document.getElementById('tenant-count-text'),
-  analyticsSection: document.getElementById('analytics-section')
+  analyticsSection: document.getElementById('analytics-section'),
+  tenantStatus: document.getElementById('tenant-status'),
+  tenantPhone: document.getElementById('tenant-phone')
 };
 
 // ==================== INITIALIZATION ====================
@@ -102,6 +106,7 @@ async function initializeApp() {
     initializeCharts();
     setupEventListeners();
     checkURLParams();
+    createExpiringLeasesModal();
   } catch (error) {
     console.error("Initialization error:", error);
     showMessage('Error loading page. Please refresh.', 'error');
@@ -227,15 +232,154 @@ function updateStats() {
   const expiringLeases = allTenants.filter(t => {
     if (!t.leaseEndDate?.toDate) return false;
     const leaseEnd = t.leaseEndDate.toDate();
-    return leaseEnd >= today && leaseEnd <= thirtyDaysFromNow;
+    return leaseEnd >= today && leaseEnd <= thirtyDaysFromNow && t.status === 'active';
   }).length;
 
   document.getElementById('total-tenants-stat').textContent = totalTenants;
   document.getElementById('active-tenants-stat').textContent = activeTenants;
   document.getElementById('monthly-revenue-stat').textContent = `₱${monthlyRevenue.toLocaleString()}`;
-  document.getElementById('expiring-leases-stat').textContent = expiringLeases;
+  
+  const expiringElement = document.getElementById('expiring-leases-stat');
+  expiringElement.textContent = expiringLeases;
+  
+  // Make expiring leases clickable
+  const expiringCard = expiringElement.closest('.stat-card');
+  if (expiringCard) {
+    expiringCard.style.cursor = expiringLeases > 0 ? 'pointer' : 'default';
+    expiringCard.onclick = expiringLeases > 0 ? showExpiringLeases : null;
+  }
   
   DOM.tenantCountText.textContent = `(${totalTenants} ${totalTenants === 1 ? 'tenant' : 'tenants'})`;
+}
+
+// ==================== EXPIRING LEASES MODAL ====================
+
+function createExpiringLeasesModal() {
+  // Check if modal already exists
+  if (document.getElementById('expiring-leases-modal')) return;
+  
+  const modalHTML = `
+    <div id="expiring-leases-modal" class="modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+          <h2>⏰ Expiring Leases (Next 30 Days)</h2>
+          <button id="close-expiring-modal" class="close-modal">&times;</button>
+        </div>
+        <div id="expiring-leases-content" class="modal-body" style="max-height: 500px; overflow-y: auto;">
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  DOM.expiringLeasesModal = document.getElementById('expiring-leases-modal');
+  DOM.closeExpiringModalBtn = document.getElementById('close-expiring-modal');
+  
+  DOM.closeExpiringModalBtn.addEventListener('click', closeExpiringLeasesModal);
+  DOM.expiringLeasesModal.addEventListener('click', (e) => {
+    if (e.target === DOM.expiringLeasesModal || e.target.classList.contains('modal-overlay')) {
+      closeExpiringLeasesModal();
+    }
+  });
+}
+
+function showExpiringLeases() {
+  const today = new Date();
+  const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+  
+  const expiringTenants = allTenants
+    .filter(t => {
+      if (!t.leaseEndDate?.toDate || t.status !== 'active') return false;
+      const leaseEnd = t.leaseEndDate.toDate();
+      return leaseEnd >= today && leaseEnd <= thirtyDaysFromNow;
+    })
+    .sort((a, b) => a.leaseEndDate.toDate() - b.leaseEndDate.toDate());
+  
+  const content = document.getElementById('expiring-leases-content');
+  
+  if (expiringTenants.length === 0) {
+    content.innerHTML = `
+      <div style="text-align: center; padding: 40px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+        <h3 style="color: #6b7280;">No Expiring Leases</h3>
+        <p style="color: #9ca3af;">All leases are valid for more than 30 days</p>
+      </div>
+    `;
+  } else {
+    content.innerHTML = `
+      <table class="tenants-table" style="margin: 0;">
+        <thead>
+          <tr>
+            <th>Tenant</th>
+            <th>Property</th>
+            <th>Unit</th>
+            <th>Lease End Date</th>
+            <th>Days Until Expiry</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${expiringTenants.map(tenant => {
+            const { fullName } = getTenantNames(tenant);
+            const propertyName = getPropertyName(tenant.propertyId);
+            const leaseEndDate = tenant.leaseEndDate.toDate();
+            const daysUntil = Math.ceil((leaseEndDate - today) / (1000 * 60 * 60 * 24));
+            const urgencyClass = daysUntil <= 7 ? 'urgent' : daysUntil <= 14 ? 'warning' : 'normal';
+            
+            return `
+              <tr>
+                <td>${escapeHtml(fullName)}</td>
+                <td>${escapeHtml(propertyName)}</td>
+                <td>${escapeHtml(tenant.unitNumber || 'N/A')}</td>
+                <td>${leaseEndDate.toLocaleDateString()}</td>
+                <td>
+                  <span class="expiry-badge expiry-${urgencyClass}">
+                    ${daysUntil} ${daysUntil === 1 ? 'day' : 'days'}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-icon" onclick="viewTenantDetails('${tenant.id}')" title="View">👁️</button>
+                    <button class="btn-icon" onclick="editTenant('${tenant.id}')" title="Edit">✏️</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+      <style>
+        .expiry-badge {
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 600;
+        }
+        .expiry-urgent {
+          background: #fee2e2;
+          color: #991b1b;
+        }
+        .expiry-warning {
+          background: #fef3c7;
+          color: #92400e;
+        }
+        .expiry-normal {
+          background: #dbeafe;
+          color: #1e40af;
+        }
+      </style>
+    `;
+  }
+  
+  DOM.expiringLeasesModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeExpiringLeasesModal() {
+  DOM.expiringLeasesModal.classList.remove('active');
+  document.body.style.overflow = '';
 }
 
 // ==================== FILTERS ====================
@@ -515,6 +659,7 @@ window.editTenant = function(tenantId) {
     document.getElementById('tenant-unit').value = tenant.unitNumber || '';
     document.getElementById('tenant-rent').value = tenant.monthlyRent || '';
     document.getElementById('tenant-deposit').value = tenant.securityDeposit || '';
+    document.getElementById('tenant-status').value = tenant.status || 'active';
     
     if (tenant.moveInDate?.toDate) {
       document.getElementById('tenant-movein').value = tenant.moveInDate.toDate().toISOString().split('T')[0];
@@ -559,11 +704,19 @@ window.deleteTenant = async function(tenantId, tenantName) {
 DOM.tenantForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
+  // Validate phone number
+  const phone = DOM.tenantPhone.value.trim();
+  if (phone && phone.length !== 11) {
+    showMessage('⚠️ Phone number must be exactly 11 digits.', 'error');
+    DOM.tenantPhone.focus();
+    return;
+  }
+
   const tenantData = {
     firstName: document.getElementById('tenant-firstname').value.trim(),
     lastName: document.getElementById('tenant-lastname').value.trim(),
     email: document.getElementById('tenant-email').value.trim(),
-    phone: document.getElementById('tenant-phone').value.trim(),
+    phone: phone,
     propertyId: document.getElementById('tenant-property').value,
     unitNumber: document.getElementById('tenant-unit').value.trim(),
     monthlyRent: parseFloat(document.getElementById('tenant-rent').value),
@@ -572,7 +725,7 @@ DOM.tenantForm.addEventListener('submit', async (e) => {
     leaseEndDate: document.getElementById('tenant-lease-end').value 
       ? new Date(document.getElementById('tenant-lease-end').value) 
       : null,
-    status: 'active'
+    status: document.getElementById('tenant-status').value
   };
 
   DOM.submitBtn.disabled = true;
@@ -802,6 +955,17 @@ function setupEventListeners() {
     if (e.target === DOM.detailsModal) closeDetailsModal();
   });
   
+  // Phone number validation - only allow numbers and limit to 11 digits
+  DOM.tenantPhone.addEventListener('input', (e) => {
+    // Remove non-numeric characters
+    let value = e.target.value.replace(/\D/g, '');
+    // Limit to 11 digits
+    if (value.length > 11) {
+      value = value.slice(0, 11);
+    }
+    e.target.value = value;
+  });
+  
   // Filter events - use debouncing for search
   DOM.filterStatus.addEventListener('change', applyFilters);
   DOM.filterProperty.addEventListener('change', applyFilters);
@@ -836,6 +1000,7 @@ function setupEventListeners() {
     if (e.key === 'Escape') {
       if (DOM.modal.classList.contains('active')) closeModal();
       if (DOM.detailsModal.classList.contains('active')) closeDetailsModal();
+      if (DOM.expiringLeasesModal && DOM.expiringLeasesModal.classList.contains('active')) closeExpiringLeasesModal();
     }
   });
 }

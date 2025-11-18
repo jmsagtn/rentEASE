@@ -67,7 +67,7 @@
             <h1>My Tenants</h1>
             <p class="page-subtitle">Manage your tenants and their lease information <span id="tenant-count-text" class="count-badge">(0 tenants)</span></p>
           </div>
-          <button class="action-btn" id="add-tenant-btn">
+          <button class="action-btnn" id="add-tenant-btn">
             <span>👤</span>
             <span>Add New Tenant</span>
           </button>
@@ -233,6 +233,15 @@
           </div>
         </div>
 
+          <!-- Add this in your tenant form modal -->
+        <div class="form-group">
+          <label for="tenant-status">Status *</label>
+          <select id="tenant-status" required>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
         <div class="form-section">
           <h3 class="form-section-title">Rental Details</h3>
           
@@ -286,7 +295,10 @@
       </form>
     </div>
   </div>
+  
 
+
+  
   <!-- Tenant Details Modal -->
   <div class="tenant-modal-overlay" id="tenant-details-modal">
     <div class="tenant-modal tenant-details-content">

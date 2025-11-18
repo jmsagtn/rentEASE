@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, addDoc, query, where, updateDoc, deleteDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, addDoc, query, where, updateDoc, deleteDoc, serverTimestamp, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -28,12 +28,12 @@ const PLAN_LIMITS = {
   premium: { 
     maxProperties: 20, 
     maxUnitsPerProperty: Infinity,
-    displayName: 'Pro'
+    displayName: 'Premium'
   },
   platinum: { 
     maxProperties: Infinity, 
     maxUnitsPerProperty: Infinity,
-    displayName: 'Premium'
+    displayName: 'Platinum'
   }
 };
 
@@ -43,7 +43,9 @@ let userLimits = PLAN_LIMITS.freemium;
 let currentPropertiesCount = 0;
 let editingPropertyId = null;
 let propertiesUnsubscribe = null;
+let tenantsUnsubscribe = null;
 let allProperties = [];
+let allTenants = [];
 let filteredProperties = [];
 
 // Chart instances
@@ -78,7 +80,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
     await loadUserData(user.uid);
-    setupRealtimeProperties(user.uid);
+    setupRealtimeListeners(user.uid);
     initializeCharts();
     setupEventListeners();
     checkURLParams();
@@ -132,8 +134,33 @@ function checkPropertyLimit() {
   }
 }
 
-// Real-time properties listener
-function setupRealtimeProperties(uid) {
+// Setup real-time listeners for both properties and tenants
+function setupRealtimeListeners(uid) {
+  // Listen to tenants first
+  const tenantsQuery = query(
+    collection(db, "tenants"),
+    where("landlordId", "==", uid)
+  );
+  
+  tenantsUnsubscribe = onSnapshot(
+    tenantsQuery,
+    (snapshot) => {
+      allTenants = [];
+      snapshot.forEach((doc) => {
+        allTenants.push({ id: doc.id, ...doc.data() });
+      });
+      
+      // After tenants are loaded, update property occupancy
+      if (allProperties.length > 0) {
+        updatePropertyOccupancy();
+      }
+    },
+    (error) => {
+      console.error("Error loading tenants:", error);
+    }
+  );
+
+  // Listen to properties
   const propertiesQuery = query(
     collection(db, "properties"),
     where("ownerId", "==", uid)
@@ -166,6 +193,11 @@ function setupRealtimeProperties(uid) {
         allProperties.push({ id: doc.id, ...doc.data() });
       });
 
+      // Update occupancy if tenants are loaded
+      if (allTenants.length > 0) {
+        await updatePropertyOccupancy();
+      }
+
       // Update stats
       updateStats();
       
@@ -188,6 +220,48 @@ function setupRealtimeProperties(uid) {
       showMessage('Error loading properties. Please refresh the page.', 'error');
     }
   );
+}
+
+// Update property occupancy based on tenants
+async function updatePropertyOccupancy() {
+  try {
+    const batch = writeBatch(db);
+    let hasUpdates = false;
+
+    for (const property of allProperties) {
+      // Get active tenants for this property
+      const activeTenants = allTenants.filter(
+        tenant => tenant.propertyId === property.id && tenant.status === 'active'
+      );
+      
+      // Count unique unit numbers (multiple tenants in same unit = 1 occupied unit)
+      const uniqueUnits = new Set();
+      activeTenants.forEach(tenant => {
+        if (tenant.unitNumber) {
+          uniqueUnits.add(tenant.unitNumber.toString().trim().toLowerCase());
+        }
+      });
+      
+      const occupiedUnits = uniqueUnits.size;
+      
+      // Only update if the count has changed
+      if (property.occupiedUnits !== occupiedUnits) {
+        const propertyRef = doc(db, "properties", property.id);
+        batch.update(propertyRef, { occupiedUnits });
+        
+        // Update local data immediately
+        property.occupiedUnits = occupiedUnits;
+        hasUpdates = true;
+      }
+    }
+
+    if (hasUpdates) {
+      await batch.commit();
+      console.log("Property occupancy updated successfully");
+    }
+  } catch (error) {
+    console.error("Error updating property occupancy:", error);
+  }
 }
 
 // Update statistics
@@ -337,6 +411,19 @@ window.viewPropertyDetails = async function(propertyId) {
       ? ((property.occupiedUnits || 0) / property.totalUnits * 100).toFixed(1)
       : 0;
 
+    // Get tenants for this property
+    const propertyTenants = allTenants.filter(t => t.propertyId === propertyId && t.status === 'active');
+    
+    // Group tenants by unit number
+    const tenantsByUnit = {};
+    propertyTenants.forEach(tenant => {
+      const unitKey = tenant.unitNumber ? tenant.unitNumber.toString().trim() : 'Unknown';
+      if (!tenantsByUnit[unitKey]) {
+        tenantsByUnit[unitKey] = [];
+      }
+      tenantsByUnit[unitKey].push(tenant);
+    });
+
     document.getElementById('details-property-name').textContent = property.name;
     
     const detailsContent = document.getElementById('property-details-content');
@@ -395,6 +482,21 @@ window.viewPropertyDetails = async function(propertyId) {
         </div>
       </div>
 
+      ${propertyTenants.length > 0 ? `
+      <div class="detail-section">
+        <h3>👥 Active Tenants (${Object.keys(tenantsByUnit).length} occupied ${Object.keys(tenantsByUnit).length === 1 ? 'unit' : 'units'})</h3>
+        ${Object.entries(tenantsByUnit).map(([unitNumber, tenants]) => `
+          <div class="detail-row">
+            <div class="detail-label">Unit ${escapeHtml(unitNumber)}:</div>
+            <div class="detail-value">
+              ${tenants.map(t => `${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}`).join(', ')}
+              ${tenants.length > 1 ? `<span style="color: #6b7280; font-size: 0.85em;"> (${tenants.length} tenants)</span>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      ` : ''}
+
       ${property.description ? `
       <div class="detail-section">
         <h3>📝 Description</h3>
@@ -437,7 +539,15 @@ window.editProperty = async function(propertyId) {
 
 // Delete property
 window.deleteProperty = async function(propertyId, propertyName) {
-  if (!confirm(`Are you sure you want to delete "${propertyName}"?\n\nThis action cannot be undone and will remove all associated data.`)) {
+  // Check if property has tenants
+  const propertyTenants = allTenants.filter(t => t.propertyId === propertyId);
+  
+  if (propertyTenants.length > 0) {
+    alert(`Cannot delete "${propertyName}" because it has ${propertyTenants.length} tenant(s). Please remove all tenants first.`);
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to delete "${propertyName}"?\n\nThis action cannot be undone.`)) {
     return;
   }
 
@@ -477,7 +587,6 @@ propertyForm.addEventListener('submit', async (e) => {
     city: document.getElementById('property-city').value.trim(),
     province: document.getElementById('property-province').value.trim(),
     description: document.getElementById('property-description').value.trim(),
-    occupiedUnits: 0,
     status: 'active'
   };
 
@@ -495,6 +604,7 @@ propertyForm.addEventListener('submit', async (e) => {
       showMessage('✅ Property updated successfully!', 'success');
     } else {
       propertyData.ownerId = currentUser.uid;
+      propertyData.occupiedUnits = 0;
       propertyData.createdAt = serverTimestamp();
 
       await addDoc(collection(db, "properties"), propertyData);
@@ -759,6 +869,7 @@ function showMessage(text, type) {
 
 function cleanup() {
   if (propertiesUnsubscribe) propertiesUnsubscribe();
+  if (tenantsUnsubscribe) tenantsUnsubscribe();
   Object.values(charts).forEach(chart => {
     if (chart) chart.destroy();
   });
