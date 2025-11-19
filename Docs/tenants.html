@@ -8,7 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/tenants.css" />
-
 </head>
 
 <body>
@@ -22,7 +21,7 @@
         <div class="user-info">
           <div class="user-name" id="user-name">Loading...</div>
           <div class="user-email" id="user-email">Loading...</div>
-          <span class="plan-badge" id="plan-badge">Freemium</span>
+          <span class="plan-badge" id="plan-badge">Free</span>
         </div>
       </div>
 
@@ -61,31 +60,145 @@
 
     <!-- Main Content -->
     <main>
-      <div class="dashboard-header">
-        <div>
-          <h1>My Tenants</h1>
-          <p class="dashboard-subtitle">Manage your tenants <span id="tenant-count-text">(0 tenants)</span></p>
+      <!-- Header Section -->
+      <div class="page-header">
+        <div class="header-content">
+          <div>
+            <h1>My Tenants</h1>
+            <p class="page-subtitle">Manage your tenants and their lease information <span id="tenant-count-text" class="count-badge">(0 tenants)</span></p>
+          </div>
+          <button class="action-btnn" id="add-tenant-btn">
+            <span>👤</span>
+            <span>Add New Tenant</span>
+          </button>
         </div>
-        <button class="action-btn" id="add-tenant-btn" style="width: auto;">
-          <span>👤</span>
-          <span>Add New Tenant</span>
-        </button>
       </div>
 
+      <!-- Alert Messages -->
       <div id="message" class="message"></div>
+
+      <!-- Tenants Stats Overview -->
+      <div class="tenants-stats">
+        <div class="stat-box">
+          <div class="stat-icon">👥</div>
+          <div class="stat-content">
+            <div class="stat-number" id="total-tenants-stat">0</div>
+            <div class="stat-label">Total Tenants</div>
+          </div>
+        </div>
+        
+        <div class="stat-box">
+          <div class="stat-icon">✅</div>
+          <div class="stat-content">
+            <div class="stat-number" id="active-tenants-stat">0</div>
+            <div class="stat-label">Active Tenants</div>
+          </div>
+        </div>
+        
+        <div class="stat-box">
+          <div class="stat-icon">💰</div>
+          <div class="stat-content">
+            <div class="stat-number" id="monthly-revenue-stat">₱0</div>
+            <div class="stat-label">Monthly Revenue</div>
+          </div>
+        </div>
+        
+        <div class="stat-box">
+          <div class="stat-icon">📅</div>
+          <div class="stat-content">
+            <div class="stat-number" id="expiring-leases-stat">0</div>
+            <div class="stat-label">Expiring Leases (30d)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="filter-group">
+          <select id="filter-status" class="filter-select">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          
+          <select id="filter-property" class="filter-select">
+            <option value="all">All Properties</option>
+          </select>
+          
+          <input type="text" id="search-tenants" class="search-input" placeholder="🔍 Search tenants...">
+        </div>
+        
+        <div class="view-toggle">
+          <button class="view-btn active" id="table-view-btn" title="Table View">
+            <span>☰</span>
+          </button>
+          <button class="view-btn" id="card-view-btn" title="Card View">
+            <span>⊞</span>
+          </button>
+        </div>
+      </div>
 
       <!-- Tenants Container -->
       <div id="tenants-container">
-        <div class="empty-state">
-          <div class="empty-state-icon">👥</div>
-          <h3>No tenants yet</h3>
-          <p>Start by adding your first tenant</p>
+        <!-- Loading State -->
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading tenants...</p>
+        </div>
+      </div>
+
+      <!-- Tenant Analytics Section -->
+      <div class="analytics-section" id="analytics-section" style="display: none;">
+        <div class="section-header">
+          <h2 class="section-title">Tenant Analytics</h2>
+          <p class="section-subtitle">Insights about your tenants and leases</p>
+        </div>
+        
+        <div class="charts-grid-tenants">
+          <!-- Tenant Status Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Tenant Status</h3>
+                <p class="chart-subtitle">Active vs Inactive</p>
+              </div>
+            </div>
+            <div class="chart-container-small">
+              <canvas id="tenantStatusChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Rent Distribution Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Rent Distribution</h3>
+                <p class="chart-subtitle">By property</p>
+              </div>
+            </div>
+            <div class="chart-container-small">
+              <canvas id="rentDistributionChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Lease Timeline Chart -->
+          <div class="chart-card chart-card-wide">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Lease Timeline</h3>
+                <p class="chart-subtitle">Move-in dates over time</p>
+              </div>
+            </div>
+            <div class="chart-container-small">
+              <canvas id="leaseTimelineChart"></canvas>
+            </div>
+          </div>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- Add Tenant Modal - UPDATED IDs -->
+  <!-- Add/Edit Tenant Modal -->
   <div class="tenant-modal-overlay" id="tenant-modal">
     <div class="tenant-modal">
       <div class="tenant-modal-header">
@@ -94,71 +207,114 @@
       </div>
       
       <form id="tenant-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="tenant-firstname">First Name *</label>
-            <input type="text" id="tenant-firstname" placeholder="John" required>
+        <div class="form-section">
+          <h3 class="form-section-title">Personal Information</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tenant-firstname">First Name *</label>
+              <input type="text" id="tenant-firstname" placeholder="John" required>
+            </div>
+
+            <div class="form-group">
+              <label for="tenant-lastname">Last Name *</label>
+              <input type="text" id="tenant-lastname" placeholder="Doe" required>
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="tenant-lastname">Last Name *</label>
-            <input type="text" id="tenant-lastname" placeholder="Doe" required>
+            <label for="tenant-email">Email Address *</label>
+            <input type="email" id="tenant-email" placeholder="john.doe@email.com" required>
+          </div>
+
+          <div class="form-group">
+            <label for="tenant-phone">Phone Number *</label>
+            <input type="tel" id="tenant-phone" placeholder="+639123456789" required>
           </div>
         </div>
 
+          <!-- Add this in your tenant form modal -->
         <div class="form-group">
-          <label for="tenant-email">Email Address *</label>
-          <input type="email" id="tenant-email" placeholder="john.doe@email.com" required>
-        </div>
-
-        <div class="form-group">
-          <label for="tenant-phone">Phone Number *</label>
-          <input type="tel" id="tenant-phone" placeholder="+639123456789" required>
-        </div>
-
-        <div class="form-group">
-          <label for="tenant-property">Property *</label>
-          <select id="tenant-property" required>
-            <option value="">Select a property</option>
+          <label for="tenant-status">Status *</label>
+          <select id="tenant-status" required>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
         </div>
 
-        <div class="form-group">
-          <label for="tenant-unit">Unit/Room Number *</label>
-          <input type="text" id="tenant-unit" placeholder="e.g., Room 101" required>
+        <div class="form-section">
+          <h3 class="form-section-title">Rental Details</h3>
+          
+          <div class="form-group">
+            <label for="tenant-property">Property *</label>
+            <select id="tenant-property" required>
+              <option value="">Select a property</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tenant-unit">Unit/Room Number *</label>
+            <input type="text" id="tenant-unit" placeholder="e.g., Room 101" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tenant-rent">Monthly Rent (₱) *</label>
+              <input type="number" id="tenant-rent" placeholder="5000" min="0" required>
+            </div>
+
+            <div class="form-group">
+              <label for="tenant-deposit">Security Deposit (₱)</label>
+              <input type="number" id="tenant-deposit" placeholder="10000" min="0">
+            </div>
+          </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="tenant-rent">Monthly Rent (₱) *</label>
-            <input type="number" id="tenant-rent" placeholder="5000" min="0" required>
-          </div>
+        <div class="form-section">
+          <h3 class="form-section-title">Lease Information</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tenant-movein">Move-in Date *</label>
+              <input type="date" id="tenant-movein" required>
+            </div>
 
-          <div class="form-group">
-            <label for="tenant-deposit">Security Deposit (₱)</label>
-            <input type="number" id="tenant-deposit" placeholder="10000" min="0">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="tenant-movein">Move-in Date *</label>
-            <input type="date" id="tenant-movein" required>
-          </div>
-
-          <div class="form-group">
-            <label for="tenant-lease-end">Lease End Date</label>
-            <input type="date" id="tenant-lease-end">
+            <div class="form-group">
+              <label for="tenant-lease-end">Lease End Date</label>
+              <input type="date" id="tenant-lease-end">
+            </div>
           </div>
         </div>
 
-        <button type="submit" class="submit-btn" id="submit-tenant-btn">
-          Add Tenant
-        </button>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="cancel-btn">Cancel</button>
+          <button type="submit" class="submit-btn" id="submit-tenant-btn">
+            Add Tenant
+          </button>
+        </div>
       </form>
     </div>
   </div>
+  
 
+
+  
+  <!-- Tenant Details Modal -->
+  <div class="tenant-modal-overlay" id="tenant-details-modal">
+    <div class="tenant-modal tenant-details-content">
+      <div class="tenant-modal-header">
+        <h2 id="details-tenant-name">Tenant Details</h2>
+        <button class="tenant-close-modal" id="close-details-modal">&times;</button>
+      </div>
+      
+      <div id="tenant-details-content">
+        <!-- Details will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <script type="module" src="js/tenants.js"></script>
 </body>
 </html>

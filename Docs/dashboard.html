@@ -1,13 +1,13 @@
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - RentEase</title>
-    <link rel="icon" type="image/png" href="images/Icon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-      <link rel="stylesheet" href="css/dashboard.css" />
-  </head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - RentEase</title>
+  <link rel="icon" type="image/png" href="images/Icon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
 
 <body>
   <div class="container">
@@ -64,14 +64,14 @@
         <p class="dashboard-subtitle">Here's what's happening with your rental properties today</p>
       </div>
 
-      <!-- Upgrade Banner (shown for freemium/premium users) -->
+      <!-- Upgrade Banner -->
       <div class="upgrade-banner" id="upgrade-banner">
         <div>
           <strong>🚀 Upgrade Your Plan</strong>
           <p style="margin: 4px 0 0 0; font-size: 14px;">Unlock more properties and unlimited units!</p>
         </div>
-            <button class="upgrade-btn">Upgrade Now</button>
-        </div>
+        <button class="upgrade-btn">Upgrade Now</button>
+      </div>
 
       <!-- Limit Warning -->
       <div class="limit-warning" id="limit-warning"></div>
@@ -197,71 +197,163 @@
           </div>
         </div>
       </div>
+
+      <!-- Analytics Section -->
+      <div class="analytics-section">
+        <div class="section-header">
+          <h2 class="section-title">Analytics & Insights</h2>
+          <p class="section-subtitle">Track your rental business performance</p>
+        </div>
+
+        <!-- Chart Grid -->
+        <div class="charts-grid">
+          <!-- Revenue Trend Chart -->
+          <div class="chart-card chart-card-large">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Revenue Trend</h3>
+                <p class="chart-subtitle">Monthly revenue over the last 6 months</p>
+              </div>
+              <select id="revenue-period" class="chart-select">
+                <option value="6">Last 6 Months</option>
+                <option value="12">Last 12 Months</option>
+                <option value="3">Last 3 Months</option>
+              </select>
+            </div>
+            <div class="chart-container">
+              <canvas id="revenueChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Payment Status Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Payment Status</h3>
+                <p class="chart-subtitle">Current month overview</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="paymentStatusChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Occupancy Rate Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Occupancy Rate</h3>
+                <p class="chart-subtitle">By property</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="occupancyChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Property Performance Chart -->
+          <div class="chart-card chart-card-large">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Property Performance</h3>
+                <p class="chart-subtitle">Revenue comparison across properties</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="propertyPerformanceChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Tenant Distribution Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Tenant Status</h3>
+                <p class="chart-subtitle">Active vs Inactive</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="tenantDistributionChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Collection Rate Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Collection Rate</h3>
+                <p class="chart-subtitle">Last 6 months</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="collectionRateChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
+  <!-- Pricing Modal -->
+  <div id="pricingModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <button class="modal-close" id="closeModal">&times;</button>
+      
+      <div class="modal-header">
+        <h2>Choose Your Plan</h2>
+        <p>Select the perfect plan for your rental management needs</p>
+      </div>
 
-      <!-- Pricing Modal -->
-    <div id="pricingModal" class="modal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <button class="modal-close" id="closeModal">&times;</button>
-            
-            <div class="modal-header">
-                <h2>Choose Your Plan</h2>
-                <p>Select the perfect plan for your rental management needs</p>
+      <div class="pricing-cards">
+        <!-- Pro Plan -->
+        <div class="pricing-card featured">
+          <div class="popular-badge">Most Popular</div>
+          <div class="plan-header">
+            <h3>Pro</h3>
+            <div class="plan-price">
+              <span class="currency">₱</span>
+              <span class="amount">499</span>
+              <span class="period">/month</span>
             </div>
-
-            <div class="pricing-cards">
-   
-
-                <!-- Pro Plan -->
-                <div class="pricing-card featured">
-                    <div class="popular-badge">Most Popular</div>
-                    <div class="plan-header">
-                        <h3>Pro</h3>
-                        <div class="plan-price">
-                            <span class="currency">₱</span>
-                            <span class="amount">499</span>
-                            <span class="period">/month</span>
-                        </div>
-                        <p class="plan-description">For growing landlords</p>
-                    </div>
-                    <ul class="plan-features">
-                        <li><span class="check">✓</span> Up to 20 properties</li>
-                        <li><span class="check">✓</span> Advanced payment tracking</li>
-                        <li><span class="check">✓</span> Automated reminders</li>
-                        <li><span class="check">✓</span> Financial reports</li>
-                        <li><span class="check">✓</span> Priority support</li>
-                    </ul>
-                    <button class="plan-button pro-button">Recommended</button>
-                </div>
-
-                <!-- Enterprise Plan -->
-                <div class="pricing-card">
-                    <div class="plan-header">
-                        <h3>Premium</h3>
-                        <div class="plan-price">
-                            <span class="currency">₱</span>
-                            <span class="amount">999</span>
-                            <span class="period">/month</span>
-                        </div>
-                        <p class="plan-description">For property managers</p>
-                    </div>
-                    <ul class="plan-features">
-                        <li><span class="check">✓</span> Unlimited properties</li>
-                        <li><span class="check">✓</span> All Pro features</li>
-                        <li><span class="check">✓</span> Multi-user access</li>
-                        <li><span class="check">✓</span> Custom integrations</li>
-                        <li><span class="check">✓</span> 24/7 support</li>
-                    </ul>
-                    <button class="plan-button enterprise-button">Continue</button>
-                </div>
-            </div>
+            <p class="plan-description">For growing landlords</p>
+          </div>
+          <ul class="plan-features">
+            <li><span class="check">✓</span> Up to 20 properties</li>
+            <li><span class="check">✓</span> Advanced payment tracking</li>
+            <li><span class="check">✓</span> Automated reminders</li>
+            <li><span class="check">✓</span> Financial reports</li>
+            <li><span class="check">✓</span> Priority support</li>
+          </ul>
+          <button class="plan-button pro-button">Recommended</button>
         </div>
-    </div>
 
+        <!-- Premium Plan -->
+        <div class="pricing-card">
+          <div class="plan-header">
+            <h3>Premium</h3>
+            <div class="plan-price">
+              <span class="currency">₱</span>
+              <span class="amount">999</span>
+              <span class="period">/month</span>
+            </div>
+            <p class="plan-description">For property managers</p>
+          </div>
+          <ul class="plan-features">
+            <li><span class="check">✓</span> Unlimited properties</li>
+            <li><span class="check">✓</span> All Pro features</li>
+            <li><span class="check">✓</span> Multi-user access</li>
+            <li><span class="check">✓</span> Custom integrations</li>
+            <li><span class="check">✓</span> 24/7 support</li>
+          </ul>
+          <button class="plan-button enterprise-button">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <script type="module" src="js/dashboard.js"></script>
 </body>
-  
-  </html>
+</html>
