@@ -8,10 +8,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/properties.css" />
+  
 </head>
 
 <body>
-  <div class="container">
+ <div class="container">
     <!-- Sidebar Navigation -->
     <aside>
       <div class="sidebar-header">
@@ -21,7 +22,7 @@
         <div class="user-info">
           <div class="user-name" id="user-name">Loading...</div>
           <div class="user-email" id="user-email">Loading...</div>
-          <span class="plan-badge" id="plan-badge">Free</span>
+          <span class="plan-badge" id="plan-badge">Freemium</span>
         </div>
       </div>
 
@@ -60,150 +61,32 @@
 
     <!-- Main Content -->
     <main>
-      <!-- Header Section -->
-      <div class="page-header">
-        <div class="header-content">
-          <div>
-            <h1>My Properties</h1>
-            <p class="page-subtitle">Manage your rental properties <span id="property-count-text" class="count-badge">(0 properties)</span></p>
-          </div>
-          <button class="action-btn" id="add-property-btn">
-            <span>➕</span>
-            <span>Add New Property</span>
-          </button>
+      <div class="dashboard-header">
+        <div>
+          <h1>My Properties</h1>
+          <p class="dashboard-subtitle">Manage your rental properties <span id="property-count-text">(0 properties)</span></p>
         </div>
+        <button class="action-btn" id="add-property-btn" style="width: auto;">
+          <span>➕</span>
+          <span>Add New Property</span>
+        </button>
       </div>
 
-      <!-- Alert Messages -->
       <div id="message" class="message"></div>
-
-      <!-- Properties Stats Overview -->
-      <div class="properties-stats">
-        <div class="stat-box">
-          <div class="stat-icon">🏠</div>
-          <div class="stat-content">
-            <div class="stat-number" id="total-properties-stat">0</div>
-            <div class="stat-label">Total Properties</div>
-          </div>
-        </div>
-        
-        <div class="stat-box">
-          <div class="stat-icon">🛏️</div>
-          <div class="stat-content">
-            <div class="stat-number" id="total-units-stat">0</div>
-            <div class="stat-label">Total Units</div>
-          </div>
-        </div>
-        
-        <div class="stat-box">
-          <div class="stat-icon">✅</div>
-          <div class="stat-content">
-            <div class="stat-number" id="occupied-units-stat">0</div>
-            <div class="stat-label">Occupied Units</div>
-          </div>
-        </div>
-        
-        <div class="stat-box">
-          <div class="stat-icon">📊</div>
-          <div class="stat-content">
-            <div class="stat-number" id="occupancy-rate-stat">0%</div>
-            <div class="stat-label">Occupancy Rate</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Filter and View Options -->
-      <div class="toolbar">
-        <div class="filter-group">
-          <select id="filter-type" class="filter-select">
-            <option value="all">All Types</option>
-            <option value="apartment">Apartments</option>
-            <option value="boarding-house">Boarding Houses</option>
-            <option value="house">Houses</option>
-            <option value="condominium">Condominiums</option>
-            <option value="commercial">Commercial Spaces</option>
-          </select>
-          
-          <select id="filter-status" class="filter-select">
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-          
-          <input type="text" id="search-properties" class="search-input" placeholder="🔍 Search properties...">
-        </div>
-        
-        <div class="view-toggle">
-          <button class="view-btn active" id="grid-view-btn" title="Grid View">
-            <span>⊞</span>
-          </button>
-          <button class="view-btn" id="list-view-btn" title="List View">
-            <span>☰</span>
-          </button>
-        </div>
-      </div>
 
       <!-- Properties Container -->
       <div class="properties-container" id="properties-container">
-        <!-- Loading State -->
-        <div class="loading-state">
-          <div class="spinner"></div>
-          <p>Loading properties...</p>
-        </div>
-      </div>
-
-      <!-- Property Analytics Section -->
-      <div class="analytics-section" id="analytics-section" style="display: none;">
-        <div class="section-header">
-          <h2 class="section-title">Property Analytics</h2>
-          <p class="section-subtitle">Performance insights for your properties</p>
-        </div>
-        
-        <div class="charts-grid-properties">
-          <!-- Property Distribution Chart -->
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <h3 class="chart-title">Property Distribution</h3>
-                <p class="chart-subtitle">By property type</p>
-              </div>
-            </div>
-            <div class="chart-container-small">
-              <canvas id="propertyTypeChart"></canvas>
-            </div>
-          </div>
-
-          <!-- Occupancy Overview Chart -->
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <h3 class="chart-title">Occupancy Overview</h3>
-                <p class="chart-subtitle">Occupied vs Available</p>
-              </div>
-            </div>
-            <div class="chart-container-small">
-              <canvas id="occupancyOverviewChart"></canvas>
-            </div>
-          </div>
-
-          <!-- Units per Property Chart -->
-          <div class="chart-card chart-card-wide">
-            <div class="chart-header">
-              <div>
-                <h3 class="chart-title">Units per Property</h3>
-                <p class="chart-subtitle">Total and occupied units comparison</p>
-              </div>
-            </div>
-            <div class="chart-container-small">
-              <canvas id="unitsPerPropertyChart"></canvas>
-            </div>
-          </div>
+        <!-- Properties will be loaded here -->
+        <div class="empty-state" style="grid-column: 1/-1;">
+          <div class="empty-state-icon">🏠</div>
+          <h3>No properties yet</h3>
+          <p>Start by adding your first property to manage</p>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- Add/Edit Property Modal -->
+  <!-- Add Property Modal - UPDATED IDs -->
   <div class="property-modal-overlay" id="property-modal">
     <div class="property-modal">
       <div class="property-modal-header">
@@ -212,90 +95,60 @@
       </div>
       
       <form id="property-form">
-        <div class="form-section">
-          <h3 class="form-section-title">Basic Information</h3>
-          
+        <div class="form-group">
+          <label for="property-name">Property Name *</label>
+          <input type="text" id="property-name" placeholder="e.g., Sunrise Apartments" required>
+        </div>
+
+        <div class="form-row">
           <div class="form-group">
-            <label for="property-name">Property Name *</label>
-            <input type="text" id="property-name" placeholder="e.g., Sunrise Apartments" required>
+            <label for="property-type">Property Type *</label>
+            <select id="property-type" required>
+              <option value="">Select type</option>
+              <option value="apartment">Apartment</option>
+              <option value="boarding-house">Boarding House</option>
+              <option value="house">House</option>
+              <option value="condominium">Condominium</option>
+              <option value="commercial">Commercial Space</option>
+            </select>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="property-type">Property Type *</label>
-              <select id="property-type" required>
-                <option value="">Select type</option>
-                <option value="apartment">Apartment</option>
-                <option value="boarding-house">Boarding House</option>
-                <option value="house">House</option>
-                <option value="condominium">Condominium</option>
-                <option value="commercial">Commercial Space</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="total-units">Total Units *</label>
-              <input type="number" id="total-units" placeholder="0" min="1" required>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h3 class="form-section-title">Location Details</h3>
-          
           <div class="form-group">
-            <label for="property-address">Complete Address *</label>
-            <input type="text" id="property-address" placeholder="Street, Barangay" required>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="property-city">City *</label>
-              <input type="text" id="property-city" placeholder="e.g., Iloilo City" required>
-            </div>
-
-            <div class="form-group">
-              <label for="property-province">Province *</label>
-              <input type="text" id="property-province" placeholder="e.g., Iloilo" required>
-            </div>
+            <label for="total-units">Total Units *</label>
+            <input type="number" id="total-units" placeholder="0" min="1" required>
           </div>
         </div>
 
-        <div class="form-section">
-          <h3 class="form-section-title">Additional Information</h3>
-          
+        <div class="form-group">
+          <label for="property-address">Complete Address *</label>
+          <input type="text" id="property-address" placeholder="Street, Barangay" required>
+        </div>
+
+        <div class="form-row">
           <div class="form-group">
-            <label for="property-description">Description (Optional)</label>
-            <textarea id="property-description" placeholder="Add details about your property, amenities, nearby landmarks, etc."></textarea>
+            <label for="property-city">City *</label>
+            <input type="text" id="property-city" placeholder="e.g., Iloilo City" required>
+          </div>
+
+          <div class="form-group">
+            <label for="property-province">Province *</label>
+            <input type="text" id="property-province" placeholder="e.g., Iloilo" required>
           </div>
         </div>
 
-        <div class="form-actions">
-          <button type="button" class="btn-cancel" id="cancel-btn">Cancel</button>
-          <button type="submit" class="submit-btn" id="submit-property-btn">
-            Add Property
-          </button>
+        <div class="form-group">
+          <label for="property-description">Description (Optional)</label>
+          <textarea id="property-description" placeholder="Add details about your property..."></textarea>
         </div>
+
+        <button type="submit" class="submit-btn" id="submit-property-btn">
+          Add Property
+        </button>
       </form>
     </div>
   </div>
-
-  <!-- Property Details Modal -->
-  <div class="property-modal-overlay" id="property-details-modal">
-    <div class="property-modal property-details-content">
-      <div class="property-modal-header">
-        <h2 id="details-property-name">Property Details</h2>
-        <button class="property-close-modal" id="close-details-modal">&times;</button>
-      </div>
-      
-      <div id="property-details-content">
-        <!-- Details will be loaded here -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Chart.js Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  
   <script type="module" src="js/properties.js"></script>
+
 </body>
 </html>
