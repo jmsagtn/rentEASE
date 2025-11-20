@@ -74,7 +74,7 @@ body::after {
   top: 0;
   left: 0;
   right: 0;
-  height: 20px;
+  height: 6px;
   background: linear-gradient(90deg, #117c6f 0%, #2fc4b2 50%, #8de5db 100%);
   border-radius: 24px 24px 0 0;
 }
@@ -94,7 +94,74 @@ body::after {
   font-weight: 400;
 }
 
-/* ---------- INPUTS ---------- */
+/* ---------- STEP INDICATOR ---------- */
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 32px;
+  gap: 12px;
+}
+
+.step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e0f2f0;
+  color: #94b8b3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.step.active {
+  background: linear-gradient(135deg, #117c6f 0%, #289c8e 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(17, 124, 111, 0.3);
+  transform: scale(1.1);
+}
+
+.step.completed {
+  background: #2fc4b2;
+  color: white;
+}
+
+.step-line {
+  width: 60px;
+  height: 3px;
+  background: #e0f2f0;
+  transition: all 0.3s ease;
+}
+
+.step-line.active {
+  background: #2fc4b2;
+}
+
+/* ---------- FORMS ---------- */
+.form-step {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+.form-step.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .form-group {
   margin-bottom: 24px;
   text-align: left;
@@ -131,6 +198,34 @@ input:focus {
 input::placeholder {
   color: #94b8b3;
   font-weight: 400;
+}
+
+/* ---------- CODE INPUT ---------- */
+.code-inputs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 24px 0;
+}
+
+.code-input {
+  width: 60px;
+  height: 60px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border: 2px solid #e0f2f0;
+  border-radius: 12px;
+  background: #f8fcfb;
+  color: #117c6f;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.code-input:focus {
+  border-color: #2fc4b2;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(47, 196, 178, 0.1);
 }
 
 /* ---------- BUTTON ---------- */
@@ -184,6 +279,24 @@ button:disabled {
   box-shadow: none;
 }
 
+.secondary-button {
+  background: transparent;
+  border: 2px solid #e0f2f0;
+  color: #117c6f;
+  box-shadow: none;
+  margin-top: 12px;
+}
+
+.secondary-button:hover {
+  background: #f8fcfb;
+  border-color: #2fc4b2;
+  transform: translateY(-2px);
+}
+
+.secondary-button::before {
+  display: none;
+}
+
 /* ---------- FEEDBACK ---------- */
 .message {
   margin-top: 20px;
@@ -192,6 +305,7 @@ button:disabled {
   border-radius: 10px;
   font-weight: 500;
   animation: slideIn 0.3s ease;
+  display: none;
 }
 
 @keyframes slideIn {
@@ -217,6 +331,38 @@ button:disabled {
   border-left: 4px solid #2fc4b2;
 }
 
+.message.info {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border-left: 4px solid #2196f3;
+}
+
+/* ---------- RESEND LINK ---------- */
+.resend-text {
+  margin-top: 16px;
+  font-size: 0.875rem;
+  color: #64948d;
+}
+
+.resend-link {
+  color: #117c6f;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.resend-link:hover {
+  color: #2fc4b2;
+  text-decoration: underline;
+}
+
+.resend-link.disabled {
+  color: #94b8b3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 480px) {
   .signup-container {
@@ -227,28 +373,14 @@ button:disabled {
   .signup-container h1 {
     font-size: 1.75rem;
   }
+
+  .code-input {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+
+  .code-inputs {
+    gap: 8px;
+  }
 }
-
-/* password toggle */
-  .password-container {
-    position: relative;
-    width: 250px;
-  }
-
-  .password-container input {
-    width: 100%;
-    padding-right: 30px;
-    padding-left: 5px;
-    height: 30px;
-    font-size: 16px;
-  }
-
-  .toggle-password {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    user-select: none;
-    font-size: 16px;
-  }

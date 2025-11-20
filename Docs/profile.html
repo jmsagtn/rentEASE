@@ -1,349 +1,332 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile & Settings - RentEase</title>
-  <link rel="icon" type="image/png" href="images/Icon.svg">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/profile.css" />
-</head>
-<body>
-  <div class="container">
-    <!-- Sidebar Navigation -->
-    <aside>
-      <div class="sidebar-header">
-        <div class="sidebar-logo">
-          <img src="images/rentease.svg" alt="RentEase">
-        </div>
-        <div class="user-info">
-          <div class="user-name">John Doe</div>
-          <div class="user-email">john.doe@email.com</div>
-        </div>
-      </div>
-
-      <div class="sidebar-nav">
-        <ul>
-          <li><a href="dashboard.html">
-            <span class="nav-icon">📊</span>
-            <span>Dashboard</span>
-          </a></li>
-          <li><a href="properties.html">
-            <span class="nav-icon">🏠</span>
-            <span>Properties</span>
-          </a></li>
-          <li><a href="tenants.html">
-            <span class="nav-icon">👥</span>
-            <span>Tenants</span>
-          </a></li>
-          <li><a href="rent-tracker.html">
-            <span class="nav-icon">💰</span>
-            <span>Rent Tracker</span>
-          </a></li>
-          <li><a href="profile.html" class="active">
-            <span class="nav-icon">⚙️</span>
-            <span>Profile / Settings</span>
-          </a></li>
-        </ul>
-      </div>
-
-      <div class="sidebar-footer">
-        <button class="logout-button">
-          <span>🚪</span>
-          <span>Logout</span>
-        </button>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main>
-      <div class="page-header">
-        <h1>Profile & Settings</h1>
-        <p class="page-subtitle">Manage your account information and preferences</p>
-      </div>
-
-      <!-- Current Subscription -->
-      <div class="subscription-card">
-        <div class="subscription-header">
-          <div class="subscription-plan-info">
-            <div class="subscription-icon">🎯</div>
-            <div class="subscription-details">
-              <h3>Free Plan</h3>
-              <p>Basic features to get started</p>
-            </div>
+  <!-- profile page -->
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile & Settings - RentEase</title>
+    <link rel="icon" type="image/png" href="images/Icon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/profile.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar Navigation -->
+      <aside>
+        <div class="sidebar-header">
+          <div class="sidebar-logo">
+            <img src="images/rentease.svg" alt="RentEase">
           </div>
-          <div class="subscription-badge">Current Plan</div>
+          <div class="user-info">
+            <div class="user-name">Loading...</div>
+            <div class="user-email">Loading...</div>
+            <span class="plan-badge" id="plan-badge">Free</span>
+          </div>
         </div>
 
-        <div class="subscription-content">
-          <ul class="subscription-features">
-            <li>Up to 5 properties</li>
-            <li>Up to 20 tenants</li>
-            <li>Basic payment tracking</li>
-            <li>Monthly reports</li>
-            <li>Email support</li>
+        <div class="sidebar-nav">
+          <ul>
+            <li><a href="dashboard.html">
+              <span class="nav-icon">📊</span>
+              <span>Dashboard</span>
+            </a></li>
+            <li><a href="properties.html">
+              <span class="nav-icon">🏠</span>
+              <span>Properties</span>
+            </a></li>
+            <li><a href="tenants.html">
+              <span class="nav-icon">👥</span>
+              <span>Tenants</span>
+            </a></li>
+            <li><a href="rent-tracker.html">
+              <span class="nav-icon">💰</span>
+              <span>Rent Tracker</span>
+            </a></li>
+            <li><a href="profile.html" class="active">
+              <span class="nav-icon">⚙️</span>
+              <span>Profile / Settings</span>
+            </a></li>
           </ul>
+        </div>
 
-          <div class="subscription-limits">
-            <div class="limit-item">
-              <div class="limit-header">
-                <span class="limit-label">Properties</span>
-                <span class="limit-value">2 / 5</span>
+        <div class="sidebar-footer">
+          <button class="logout-button">
+            <span>🚪</span>
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main>
+        <div class="page-header">
+          <h1>Profile & Settings</h1>
+          <p class="page-subtitle">Manage your account information and preferences</p>
+        </div>
+
+        <!-- Current Subscription -->
+        <div class="subscription-card">
+          <div class="subscription-header">
+            <div class="subscription-plan-info">
+              <div class="subscription-icon">🎯</div>
+              <div class="subscription-details">
+                <h3>Free Plan</h3>
+                <p>Basic features to get started</p>
               </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 40%;"></div>
+            </div>
+            <div class="subscription-badge">Current Plan</div>
+          </div>
+
+          <div class="subscription-content">
+            <ul class="subscription-features">
+              <li>Up to 2 properties</li>
+              <li>Up to 8 tenants total</li>
+              <li>Basic payment tracking</li>
+              <li>Monthly reports</li>
+              <li>Email support</li>
+            </ul>
+
+            <div class="subscription-limits">
+              <div class="limit-item">
+                <div class="limit-header">
+                  <span class="limit-label">Properties</span>
+                  <span class="limit-value">0 / 2</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 0%;"></div>
+                </div>
+              </div>
+              <div class="limit-item">
+                <div class="limit-header">
+                  <span class="limit-label">Tenants</span>
+                  <span class="limit-value">0 / 8</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 0%;"></div>
+                </div>
               </div>
             </div>
-            <div class="limit-item">
-              <div class="limit-header">
-                <span class="limit-label">Tenants</span>
-                <span class="limit-value">12 / 20</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 60%;"></div>
-              </div>
-            </div>
-          </div>
 
-          <div class="subscription-action">
-            <button class="btn btn-primary">
-              <span>⬆️</span>
-              <span>Upgrade Plan</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Alert for Free Plan -->
-      <div class="alert alert-info">
-        <div class="alert-icon">💡</div>
-        <div class="alert-content">
-          <div class="alert-title">Upgrade to unlock more features</div>
-          <div class="alert-text">Get unlimited properties, advanced reporting, SMS notifications, and priority support with our Professional plan starting at ₱299/month.</div>
-        </div>
-      </div>
-
-      <!-- Profile Information -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Profile Information</h2>
-          <p class="card-description">Update your personal details and contact information</p>
-        </div>
-
-        <form>
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">First Name</label>
-              <input type="text" class="form-input" value="John" placeholder="Enter first name">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Last Name</label>
-              <input type="text" class="form-input" value="Doe" placeholder="Enter last name">
-            </div>
-
-            <div class="form-group full-width">
-              <label class="form-label">Email Address</label>
-              <input type="email" class="form-input" value="john.doe@email.com" placeholder="Enter email">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Phone Number</label>
-              <input type="tel" class="form-input" value="+63 912 345 6789" placeholder="Enter phone number">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Location</label>
-              <input type="text" class="form-input" value="Iloilo City" placeholder="Enter location">
-            </div>
-
-            <div class="form-group full-width">
-              <label class="form-label">Address</label>
-              <textarea class="form-input" placeholder="Enter complete address">123 Sample Street, Iloilo City, Philippines</textarea>
-            </div>
-          </div>
-
-          <div class="btn-group">
-            <button type="submit" class="btn btn-primary">
-              <span>💾</span>
-              <span>Save Changes</span>
-            </button>
-            <button type="button" class="btn btn-secondary">Cancel</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Change Password -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Change Password</h2>
-          <p class="card-description">Ensure your account is using a strong password</p>
-        </div>
-
-        <form>
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label class="form-label">Current Password</label>
-              <input type="password" class="form-input" placeholder="Enter current password">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">New Password</label>
-              <input type="password" class="form-input" placeholder="Enter new password">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Confirm New Password</label>
-              <input type="password" class="form-input" placeholder="Confirm new password">
-            </div>
-          </div>
-
-          <div class="btn-group">
-            <button type="submit" class="btn btn-primary">
-              <span>🔒</span>
-              <span>Update Password</span>
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Notification Settings -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Notification Preferences</h2>
-          <p class="card-description">Manage how you receive updates and alerts</p>
-        </div>
-
-        <div class="settings-section">
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Email Notifications</div>
-              <div class="setting-description">Receive email updates about payments and activities</div>
-            </div>
-            <div class="toggle-switch active" onclick="toggleSwitch(this)">
-              <div class="toggle-slider"></div>
-            </div>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Payment Reminders</div>
-              <div class="setting-description">Get notified when rent payments are due</div>
-            </div>
-            <div class="toggle-switch active" onclick="toggleSwitch(this)">
-              <div class="toggle-slider"></div>
-            </div>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">SMS Notifications</div>
-              <div class="setting-description">Receive SMS alerts for important updates (Professional plan)</div>
-            </div>
-            <div class="toggle-switch" onclick="showUpgradeAlert()">
-              <div class="toggle-slider"></div>
-            </div>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Weekly Reports</div>
-              <div class="setting-description">Get weekly summary of your rental activities</div>
-            </div>
-            <div class="toggle-switch" onclick="toggleSwitch(this)">
-              <div class="toggle-slider"></div>
-            </div>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Marketing Emails</div>
-              <div class="setting-description">Receive updates about new features and promotions</div>
-            </div>
-            <div class="toggle-switch" onclick="toggleSwitch(this)">
-              <div class="toggle-slider"></div>
+            <div class="subscription-action">
+              <button class="btn btn-primary">
+                <span>⬆️</span>
+                <span>Upgrade Plan</span>
+              </button>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Account Management -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Account Management</h2>
-          <p class="card-description">Manage your account and data</p>
-        </div>
-
-        <div class="alert alert-warning">
-          <div class="alert-icon">⚠️</div>
+        <!-- Alert for Free Plan -->
+        <div class="alert alert-info">
+          <div class="alert-icon">💡</div>
           <div class="alert-content">
-            <div class="alert-title">Danger Zone</div>
-            <div class="alert-text">These actions are permanent and cannot be undone. Please proceed with caution.</div>
+            <div class="alert-title">Upgrade to unlock more features</div>
+            <div class="alert-text">Get up to 20 properties, advanced reporting, automated reminders, and priority support with our Pro plan starting at ₱299/month.</div>
           </div>
         </div>
 
-        <div class="settings-section">
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Export Your Data</div>
-              <div class="setting-description">Download all your rental data in CSV format</div>
-            </div>
-            <button class="btn btn-secondary">
-              <span>📥</span>
-              <span>Export Data</span>
-            </button>
+        <!-- Profile Information -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Profile Information</h2>
+            <p class="card-description">Update your personal details and contact information</p>
           </div>
 
-          <div class="setting-item">
-            <div class="setting-info">
-              <div class="setting-title">Delete Account</div>
-              <div class="setting-description">Permanently delete your account and all data</div>
+          <form>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-input" value="" placeholder="Enter first name">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-input" value="" placeholder="Enter last name">
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-input" value="" placeholder="Enter email" disabled>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" class="form-input" value="" placeholder="Enter phone number">
+              </div>
+
+
+
+              <div class="form-group full-width">
+                <label class="form-label">Address</label>
+                <textarea class="form-input" placeholder="Enter complete address"></textarea>
+              </div>
             </div>
-            <button class="btn btn-danger" onclick="confirmDelete()">
-              <span>🗑️</span>
-              <span>Delete Account</span>
-            </button>
+
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary">
+                <span>💾</span>
+                <span>Save Changes</span>
+              </button>
+              <button type="button" class="btn btn-secondary">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Change Password</h2>
+            <p class="card-description">Ensure your account is using a strong password</p>
+          </div>
+
+          <form>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label class="form-label">Current Password</label>
+                <input type="password" class="form-input" placeholder="Enter current password">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-input" placeholder="Enter new password">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" class="form-input" placeholder="Confirm new password">
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary">
+                <span>🔒</span>
+                <span>Update Password</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Notification Preferences</h2>
+            <p class="card-description">Manage how you receive updates and alerts</p>
+          </div>
+
+          <div class="settings-section">
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-title">Email Notifications</div>
+                <div class="setting-description">Receive email updates about payments and activities</div>
+              </div>
+              <div class="toggle-switch" onclick="toggleSwitch(this)">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-title">Payment Reminders</div>
+                <div class="setting-description">Get notified when rent payments are due</div>
+              </div>
+              <div class="toggle-switch" onclick="toggleSwitch(this)">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-title">SMS Notifications</div>
+                <div class="setting-description">Receive SMS alerts for important updates (Pro plan)</div>
+              </div>
+              <div class="toggle-switch" onclick="toggleSwitch(this)">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-title">Weekly Reports</div>
+                <div class="setting-description">Get weekly summary of your rental activities</div>
+              </div>
+              <div class="toggle-switch" onclick="toggleSwitch(this)">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-title">Marketing Emails</div>
+                <div class="setting-description">Receive updates about new features and promotions</div>
+              </div>
+              <div class="toggle-switch" onclick="toggleSwitch(this)">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- Account Management -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Account Management</h2>
+            <p class="card-description">Manage your account and data</p>
+          </div>
+
+          <div class="alert alert-warning">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+              <div class="alert-title">Danger Zone</div>
+              <div class="alert-text">These actions are permanent and cannot be undone. Please proceed with caution.</div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-title">Export Your Data</div>
+                <div class="setting-description">Download all your rental data in CSV format</div>
+              </div>
+              <button class="btn btn-secondary">
+                <span>📥</span>
+                <span>Export Data</span>
+              </button>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <div class="setting-title">Delete Account</div>
+                <div class="setting-description">Permanently delete your account and all data</div>
+              </div>
+              <button class="btn btn-danger" onclick="confirmDelete()">
+                <span>🗑️</span>
+                <span>Delete Account</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+
+  <!-- Pricing Modal -->
+  <div id="pricingModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <button class="modal-close" id="closeModal">&times;</button>
+      
+      <div class="modal-header">
+        <h2>Choose Your Plan</h2>
+        <p>Select the perfect plan for your rental management needs</p>
       </div>
-    </main>
+
+      <div class="pricing-cards">
+        <!-- Plans will be dynamically inserted here -->
+      </div>
+    </div>
   </div>
 
-  <script>
-    // Toggle switch functionality
-    function toggleSwitch(element) {
-      element.classList.toggle('active');
-    }
 
-    // Show upgrade alert for premium features
-    function showUpgradeAlert() {
-      alert('This feature is available in the Professional plan. Upgrade now to unlock SMS notifications and more!');
-    }
-
-    // Confirm account deletion
-    function confirmDelete() {
-      if(confirm('Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.')) {
-        if(confirm('This is your last chance. Are you absolutely sure?')) {
-          alert('Account deletion initiated. You will receive an email confirmation.');
-          // Handle account deletion
-        }
-      }
-    }
-
-    // Logout functionality
-    document.querySelector('.logout-button').addEventListener('click', function() {
-      if(confirm('Are you sure you want to logout?')) {
-        window.location.href = 'index.html';
-      }
-    });
-
-    // Form submission handlers
-    document.querySelectorAll('form').forEach(form => {
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        alert('Changes saved successfully!');
-      });
-    });
-  </script>
-</body>
-</html>
+    <script type="module" src="js/profile.js"></script>
+  </body>
+  </html>

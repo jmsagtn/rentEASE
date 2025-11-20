@@ -1,3 +1,4 @@
+// Dashboard page
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, query, where, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
@@ -957,14 +958,156 @@ const pricingModal = document.getElementById('pricingModal');
 const closeModalBtn = document.getElementById('closeModal');
 const modalOverlay = document.querySelector('.modal-overlay');
 
-function openPricingModal() {
+function openPricingModal(currentPlan) {
+  if (!pricingModal) {
+    showError('Pricing modal not found. Please refresh the page.');
+    return;
+  }
+
+  // Get pricing cards container
+  const pricingCards = pricingModal.querySelector('.pricing-cards');
+  if (!pricingCards) return;
+
+  // Clear existing cards
+  pricingCards.innerHTML = '';
+
+  // Define plans to show based on current plan
+  const plans = [];
+  
+  if (currentPlan === 'freemium') {
+    // Show both Pro and Premium plans
+    plans.push({
+      name: 'premium',
+      displayName: 'Premium',
+      price: 499,
+      description: 'For growing landlords',
+      features: [
+        'Up to 20 properties',
+        'Advanced payment tracking',
+        'Automated reminders',
+        'Financial reports',
+        'Priority support'
+      ],
+      isFeatured: true
+    });
+    
+    plans.push({
+      name: 'platinum',
+      displayName: 'Platinum',
+      price: 999,
+      description: 'For property managers',
+      features: [
+        'Unlimited properties',
+        'All Pro features',
+        'Multi-user access',
+        'Custom integrations',
+        '24/7 support'
+      ],
+      isFeatured: false
+    });
+  } else if (currentPlan === 'premium') {
+    // Show only Premium plan
+    plans.push({
+      name: 'platinum',
+      displayName: 'Platinum',
+      price: 999,
+      description: 'For property managers',
+      features: [
+        'Unlimited properties',
+        'All Pro features',
+        'Multi-user access',
+        'Custom integrations',
+        '24/7 support'
+      ],
+      isFeatured: true
+    });
+  }
+
+  // Generate HTML for each plan
+  plans.forEach(plan => {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = `pricing-card${plan.isFeatured ? ' featured' : ''}`;
+    
+    cardDiv.innerHTML = `
+      ${plan.isFeatured ? '<div class="popular-badge">Most Popular</div>' : ''}
+      <div class="plan-header">
+        <h3>${plan.displayName}</h3>
+        <div class="plan-price">
+          <span class="currency">₱</span>
+          <span class="amount">${plan.price}</span>
+          <span class="period">/month</span>
+        </div>
+        <p class="plan-description">${plan.description}</p>
+      </div>
+      <ul class="plan-features">
+        ${plan.features.map(feature => `<li><span class="check">✓</span> ${feature}</li>`).join('')}
+      </ul>
+      <button class="plan-button ${plan.isFeatured ? 'pro-button' : 'enterprise-button'}">
+        ${plan.isFeatured ? 'Recommended' : 'Continue'}
+      </button>
+    `;
+    
+    pricingCards.appendChild(cardDiv);
+  });
+
+  // Add event listeners to plan buttons
+  const planButtons = pricingModal.querySelectorAll('.plan-button');
+  planButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const planCard = this.closest('.pricing-card');
+      const planNameElement = planCard.querySelector('h3');
+      const planAmountElement = planCard.querySelector('.amount');
+      
+      let selectedPlan = {
+        name: '',
+        displayName: planNameElement.textContent,
+        price: parseInt(planAmountElement.textContent),
+        currency: '₱'
+      };
+      
+      // Map UI names to backend plan names
+      if (planNameElement.textContent === 'Pro') {
+        selectedPlan.name = 'premium';
+        selectedPlan.features = [
+          'Up to 20 properties',
+          'Advanced payment tracking',
+          'Automated reminders',
+          'Financial reports',
+          'Priority support'
+        ];
+      } else if (planNameElement.textContent === 'Premium') {
+        selectedPlan.name = 'platinum';
+        selectedPlan.features = [
+          'Unlimited properties',
+          'All Pro features',
+          'Multi-user access',
+          'Custom integrations',
+          '24/7 support'
+        ];
+      }
+      
+      sessionStorage.setItem('selectedPlan', JSON.stringify(selectedPlan));
+      sessionStorage.setItem('returnTo', 'dashboard.html');
+      
+      button.disabled = true;
+      button.textContent = 'Redirecting...';
+      
+      setTimeout(() => {
+        window.location.href = 'payment.html';
+      }, 500);
+    });
+  });
+
+  // Show modal
   pricingModal.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
 
 function closePricingModal() {
-  pricingModal.classList.remove('active');
-  document.body.style.overflow = '';
+  if (pricingModal) {
+    pricingModal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
 }
 
 const upgradeBanner = document.getElementById('upgrade-banner');
@@ -973,7 +1116,7 @@ if (upgradeBanner) {
   if (upgradeBtn) {
     upgradeBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      openPricingModal();
+      openPricingModal(userPlan);
     });
   }
 }
@@ -987,57 +1130,12 @@ if (modalOverlay) {
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && pricingModal.classList.contains('active')) {
+  if (e.key === 'Escape' && pricingModal && pricingModal.classList.contains('active')) {
     closePricingModal();
   }
 });
 
-// Handle plan button clicks
-const planButtons = document.querySelectorAll('.plan-button');
-planButtons.forEach(button => {
-  button.addEventListener('click', function() {
-    const planCard = this.closest('.pricing-card');
-    const planNameElement = planCard.querySelector('h3');
-    const planAmountElement = planCard.querySelector('.amount');
-    
-    let selectedPlan = {
-      name: '',
-      displayName: planNameElement.textContent,
-      price: parseInt(planAmountElement.textContent),
-      currency: '₱'
-    };
-    
-    // Map UI names to backend plan names
-    if (planNameElement.textContent === 'Pro') {
-      selectedPlan.name = 'premium';
-      selectedPlan.features = [
-        'Up to 20 properties',
-        'Advanced payment tracking',
-        'Automated reminders',
-        'Financial reports',
-        'Priority support'
-      ];
-    } else if (planNameElement.textContent === 'Premium') {
-      selectedPlan.name = 'platinum';
-      selectedPlan.features = [
-        'Unlimited properties',
-        'All Pro features',
-        'Multi-user access',
-        'Custom integrations',
-        '24/7 support'
-      ];
-    }
-    
-    sessionStorage.setItem('selectedPlan', JSON.stringify(selectedPlan));
-    
-    button.disabled = true;
-    button.textContent = 'Redirecting...';
-    
-    setTimeout(() => {
-      window.location.href = 'payment.html';
-    }, 500);
-  });
-});
+
 
 // Revenue period selector
 const revenuePeriodSelect = document.getElementById('revenue-period');
