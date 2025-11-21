@@ -1,4 +1,5 @@
- * {
+/* docs/css/rent-tracker.css */
+* {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -803,3 +804,254 @@
       font-size: 16px;
       font-weight: 700;
     }
+
+
+    /* Add these styles to your existing rent-tracker.css file */
+
+/* Email Type Button Styles */
+.action-btn-email {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.action-btn-email:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Email Type Selection Modal Buttons */
+.email-type-btn {
+  padding: 14px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+
+.email-type-btn:hover {
+  transform: translateX(5px);
+}
+
+.email-type-btn:active {
+  transform: translateX(5px) scale(0.98);
+}
+
+/* Action Buttons Container - Allow wrapping for more buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Make buttons slightly smaller to fit better */
+@media (max-width: 1200px) {
+  .action-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* Loading state for email buttons */
+.action-btn-email.loading {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.action-btn-email.loading::after {
+  content: '...';
+  animation: ellipsis 1.5s infinite;
+}
+
+@keyframes ellipsis {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+
+
+/* Add these styles to your existing rent-tracker.css file */
+
+/* Clickable Status Badge Styles */
+.status-badge.status-clickable {
+  cursor: pointer;
+  position: relative;
+  padding-right: 28px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.status-badge.status-clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  filter: brightness(1.1);
+}
+
+.status-badge.status-clickable:active {
+  transform: translateY(0);
+}
+
+.status-edit-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.status-badge.status-clickable:hover .status-edit-icon {
+  opacity: 1;
+  animation: wiggle 0.3s ease;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: translateY(-50%) rotate(0deg); }
+  25% { transform: translateY(-50%) rotate(-5deg); }
+  75% { transform: translateY(-50%) rotate(5deg); }
+}
+
+/* Status Type Selection Modal Buttons */
+.status-type-btn {
+  padding: 14px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+
+.status-type-btn:hover {
+  transform: translateX(5px);
+}
+
+.status-type-btn:active {
+  transform: translateX(5px) scale(0.98);
+}
+
+/* Enhanced Status Badge Colors for Better Visibility */
+.status-paid {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-overdue {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Tooltip for Status Badge */
+.status-badge.status-clickable::before {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a2131;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  margin-bottom: 8px;
+  z-index: 1000;
+}
+
+.status-badge.status-clickable::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1a2131;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  margin-bottom: 2px;
+}
+
+.status-badge.status-clickable:hover::before,
+.status-badge.status-clickable:hover::after {
+  opacity: 1;
+}
+
+/* Email Type Button Styles */
+.action-btn-email {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.action-btn-email:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Email Type Selection Modal Buttons */
+.email-type-btn {
+  padding: 14px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+
+.email-type-btn:hover {
+  transform: translateX(5px);
+}
+
+.email-type-btn:active {
+  transform: translateX(5px) scale(0.98);
+}
+
+/* Action Buttons Container - Allow wrapping for more buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Make buttons slightly smaller to fit better */
+@media (max-width: 1200px) {
+  .action-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* Loading state for email buttons */
+.action-btn-email.loading {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.action-btn-email.loading::after {
+  content: '...';
+  animation: ellipsis 1.5s infinite;
+}
+
+@keyframes ellipsis {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
