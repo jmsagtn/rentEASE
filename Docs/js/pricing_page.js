@@ -1,7 +1,6 @@
 // Get all necessary elements
 const toggleButtons = document.querySelectorAll('.toggle-btn');
 const pricingCards = document.querySelectorAll('.pricing-card');
-const ctaButtons = document.querySelectorAll('.cta-btn');
 
 // Current billing cycle state
 let currentCycle = 'monthly';
@@ -57,17 +56,26 @@ function updatePrices() {
     });
 }
 
-// Handle CTA button clicks
-ctaButtons.forEach(button => {
-    button.addEventListener('click', function() {
-        const card = this.closest('.pricing-card');
-        const planName = card.getAttribute('data-plan');
-        const formattedPlanName = planName.charAt(0).toUpperCase() + planName.slice(1);
-        
-        // Alert for demo purposes (replace with actual signup logic)
-        alert('Starting ' + formattedPlanName + ' plan!');
-        
-        // In production, redirect to signup/checkout page
-        // window.location.href = '/signup?plan=' + planName + '&cycle=' + currentCycle;
+// Add scroll effect for navbar
+window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+    } else {
+        nav.classList.remove('scrolled');
+    }
+});
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            e.preventDefault();
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
     });
 });

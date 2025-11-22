@@ -220,7 +220,7 @@ function openPricingModal(currentPlan) {
     // Show both Pro and Premium plans
     plans.push({
       name: 'premium',
-      displayName: 'Pro',
+      displayName: 'Premium',
       price: 499,
       description: 'For growing landlords',
       features: [
@@ -251,7 +251,7 @@ function openPricingModal(currentPlan) {
     // Show only Premium plan
     plans.push({
       name: 'platinum',
-      displayName: 'Premium',
+      displayName: 'Platinum',
       price: 999,
       description: 'For property managers',
       features: [
@@ -309,7 +309,7 @@ function openPricingModal(currentPlan) {
       
       // Map UI names to backend plan names
       if (planNameElement.textContent === 'Pro') {
-        selectedPlan.name = 'premium';
+        selectedPlan.name = 'Premium';
         selectedPlan.features = [
           'Up to 20 properties',
           'Advanced payment tracking',
@@ -415,11 +415,28 @@ function updateProfileForm(data) {
   const firstName = nameParts[0] || '';
   const lastName = nameParts.slice(1).join(' ') || '';
 
-  document.querySelector('input[placeholder="Enter first name"]').value = firstName;
-  document.querySelector('input[placeholder="Enter last name"]').value = lastName;
-  document.querySelector('input[type="email"]').value = data.email || '';
-  document.querySelector('input[type="tel"]').value = data.phone || '';
-  document.querySelector('textarea').value = data.address || '';
+  // Get all forms
+  const forms = document.querySelectorAll('form');
+  if (forms.length === 0) return;
+
+  // Profile form is the first form
+  const profileForm = forms[0];
+  
+  // Get form groups in order
+  const formGroups = profileForm.querySelectorAll('.form-group');
+  
+  // Get inputs by their position in the form
+  const firstNameInput = formGroups[0]?.querySelector('.form-input');
+  const lastNameInput = formGroups[1]?.querySelector('.form-input');
+  const emailInput = profileForm.querySelector('input[type="email"]');
+  const phoneInput = profileForm.querySelector('input[type="tel"]');
+  const addressInput = profileForm.querySelector('textarea');
+
+  if (firstNameInput) firstNameInput.value = firstName;
+  if (lastNameInput) lastNameInput.value = lastName;
+  if (emailInput) emailInput.value = data.email || '';
+  if (phoneInput) phoneInput.value = data.phone || '';
+  if (addressInput) addressInput.value = data.address || '';
 }
 
 // Update notification settings
@@ -447,12 +464,33 @@ async function saveProfileChanges(e) {
   
   if (!currentUser) return;
 
-  const firstName = document.querySelector('input[placeholder="Enter first name"]').value.trim();
-  const lastName = document.querySelector('input[placeholder="Enter last name"]').value.trim();
-  const phone = document.querySelector('input[type="tel"]').value.trim();
-  const address = document.querySelector('textarea').value.trim();
+  // Get all forms
+  const forms = document.querySelectorAll('form');
+  if (forms.length === 0) return;
+
+  // Profile form is the first form
+  const profileForm = forms[0];
+  
+  // Get form groups in order
+  const formGroups = profileForm.querySelectorAll('.form-group');
+  
+  // Get inputs by their position in the form
+  const firstNameInput = formGroups[0]?.querySelector('.form-input');
+  const lastNameInput = formGroups[1]?.querySelector('.form-input');
+  const phoneInput = profileForm.querySelector('input[type="tel"]');
+  const addressInput = profileForm.querySelector('textarea');
+
+  const firstName = firstNameInput?.value.trim() || '';
+  const lastName = lastNameInput?.value.trim() || '';
+  const phone = phoneInput?.value.trim() || '';
+  const address = addressInput?.value.trim() || '';
 
   const username = `${firstName} ${lastName}`.trim();
+
+  if (!username) {
+    showNotification("Please enter your name", "error");
+    return;
+  }
 
   try {
     await updateDoc(doc(db, "users", currentUser.uid), {
@@ -479,9 +517,23 @@ async function changePassword(e) {
   
   if (!currentUser) return;
 
-  const currentPassword = document.querySelector('input[placeholder="Enter current password"]').value;
-  const newPassword = document.querySelector('input[placeholder="Enter new password"]').value;
-  const confirmPassword = document.querySelector('input[placeholder="Confirm new password"]').value;
+  // Get all forms
+  const forms = document.querySelectorAll('form');
+  if (forms.length < 2) return;
+
+  // Password form is the second form
+  const passwordForm = forms[1];
+  
+  // Get form groups in order
+  const formGroups = passwordForm.querySelectorAll('.form-group');
+  
+  const currentPasswordInput = formGroups[0]?.querySelector('.form-input');
+  const newPasswordInput = formGroups[1]?.querySelector('.form-input');
+  const confirmPasswordInput = formGroups[2]?.querySelector('.form-input');
+
+  const currentPassword = currentPasswordInput?.value || '';
+  const newPassword = newPasswordInput?.value || '';
+  const confirmPassword = confirmPasswordInput?.value || '';
 
   if (!currentPassword || !newPassword || !confirmPassword) {
     showNotification("Please fill in all password fields", "error");
@@ -503,9 +555,9 @@ async function changePassword(e) {
     await reauthenticateWithCredential(currentUser, credential);
     await updatePassword(currentUser, newPassword);
     
-    document.querySelector('input[placeholder="Enter current password"]').value = '';
-    document.querySelector('input[placeholder="Enter new password"]').value = '';
-    document.querySelector('input[placeholder="Confirm new password"]').value = '';
+    if (currentPasswordInput) currentPasswordInput.value = '';
+    if (newPasswordInput) newPasswordInput.value = '';
+    if (confirmPasswordInput) confirmPasswordInput.value = '';
     
     showNotification("Password updated successfully!", "success");
   } catch (error) {
@@ -709,21 +761,28 @@ window.confirmDelete = deleteAccount;
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
-  const profileForm = document.querySelectorAll('form')[0];
-  if (profileForm) {
-    profileForm.addEventListener('submit', saveProfileChanges);
+  const forms = document.querySelectorAll('form');
+  
+  // Profile form (first form)
+  if (forms[0]) {
+    forms[0].addEventListener('submit', saveProfileChanges);
   }
 
-  const passwordForm = document.querySelectorAll('form')[1];
-  if (passwordForm) {
-    passwordForm.addEventListener('submit', changePassword);
+  // Password form (second form)
+  if (forms[1]) {
+    forms[1].addEventListener('submit', changePassword);
   }
 
-  const exportBtn = document.querySelector('.btn-secondary');
-  if (exportBtn && exportBtn.textContent.includes('Export')) {
-    exportBtn.addEventListener('click', exportUserData);
-  }
+  // Export button
+  const settingsItems = document.querySelectorAll('.setting-item');
+  settingsItems.forEach(item => {
+    const btn = item.querySelector('.btn-secondary');
+    if (btn && btn.textContent.includes('Export')) {
+      btn.addEventListener('click', exportUserData);
+    }
+  });
 
+  // Logout button
   const logoutBtn = document.querySelector('.logout-button');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async function() {
@@ -739,16 +798,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Modal close button
   const closeModalBtn = document.getElementById('closeModal');
   if (closeModalBtn) {
     closeModalBtn.addEventListener('click', closePricingModal);
   }
 
+  // Modal overlay
   const modalOverlay = document.querySelector('.modal-overlay');
   if (modalOverlay) {
     modalOverlay.addEventListener('click', closePricingModal);
   }
 
+  // Escape key to close modal
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       closePricingModal();
