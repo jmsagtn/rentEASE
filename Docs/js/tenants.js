@@ -938,6 +938,42 @@ function toggleAnalyticsSection() {
 // ==================== EVENT LISTENERS ====================
 
 function setupEventListeners() {
+  // Mobile menu functionality
+  const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  const sidebar = document.querySelector('aside');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+  if (mobileMenuToggle && sidebar) {
+    mobileMenuToggle.addEventListener('click', function() {
+      sidebar.classList.toggle('mobile-open');
+      if (sidebarOverlay) {
+        sidebarOverlay.classList.toggle('active');
+      }
+    });
+  }
+
+  if (sidebarOverlay && sidebar) {
+    sidebarOverlay.addEventListener('click', function() {
+      sidebar.classList.remove('mobile-open');
+      sidebarOverlay.classList.remove('active');
+    });
+  }
+
+  // Close sidebar when clicking navigation links on mobile
+  if (sidebar) {
+    const navLinks = sidebar.querySelectorAll('a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('mobile-open');
+          if (sidebarOverlay) {
+            sidebarOverlay.classList.remove('active');
+          }
+        }
+      });
+    });
+  }
+
   // Modal events
   DOM.addTenantBtn.addEventListener('click', () => {
     if (!DOM.addTenantBtn.disabled) openModal(false);

@@ -11,9 +11,15 @@
 </head>
 
 <body>
+  <!-- Mobile Menu Toggle -->
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+  
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <div class="container">
     <!-- Sidebar Navigation -->
-    <aside>
+    <aside id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
           <img src="images/rentease.svg" alt="RentEase">
@@ -308,6 +314,29 @@
 
       <div class="pricing-cards">
         <!-- Plans will be dynamically inserted here based on user's current plan -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Payments Modal -->
+  <div id="paymentsModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content payments-modal-content">
+      <button class="modal-close" id="closePaymentsModal">&times;</button>
+      
+      <div class="modal-header">
+        <h2>All Upcoming Payments</h2>
+        <p>Complete list of pending and overdue payments</p>
+      </div>
+
+      <div class="payments-filter">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="pending">Pending</button>
+        <button class="filter-btn" data-filter="overdue">Overdue</button>
+      </div>
+
+      <div class="payments-modal-list" id="paymentsModalList">
+        <!-- Payments will be dynamically inserted here -->
       </div>
     </div>
   </div>

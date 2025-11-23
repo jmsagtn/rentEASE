@@ -19,6 +19,45 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+
+
+// Add at the beginning after imports
+let paymentsListener = null;
+let allUpcomingPayments = [];
+let currentPaymentFilter = 'all';
+
+// Mobile menu functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+  if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener('click', function() {
+      sidebar.classList.toggle('mobile-open');
+      sidebarOverlay.classList.toggle('active');
+    });
+  }
+
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', function() {
+      sidebar.classList.remove('mobile-open');
+      sidebarOverlay.classList.remove('active');
+    });
+  }
+
+  // Close sidebar when clicking navigation links on mobile
+  const navLinks = sidebar.querySelectorAll('a');
+  navLinks.forEach(link => {
+    link.addEventListener('click', function() {
+      if (window.innerWidth <= 768) {
+        sidebar.classList.remove('mobile-open');
+        sidebarOverlay.classList.remove('active');
+      }
+    });
+  });
+});
+
 // Plan limits configuration
 const PLAN_LIMITS = {
   freemium: { 
@@ -87,6 +126,12 @@ onAuthStateChanged(auth, async (user) => {
 
 // Clean up all listeners
 function cleanupListeners() {
+  // Clean up payment listener
+  if (paymentsListener) {
+    paymentsListener();
+    paymentsListener = null;
+  }
+  
   Object.values(unsubscribers).forEach(unsub => {
     if (unsub) unsub();
   });
@@ -315,12 +360,6 @@ function setupRealtimeDashboard(uid) {
         }
       });
 
-      // Generate payments from tenants
-      chartData.payments = generatePaymentsFromTenants(chartData.tenants);
-      
-      // Count pending payments
-      const pendingCount = chartData.payments.filter(p => p.status === 'pending' || p.status === 'overdue').length;
-
       document.getElementById('active-tenants').textContent = tenantsCount;
       
       const tenantChange = document.getElementById('tenant-change');
@@ -335,19 +374,8 @@ function setupRealtimeDashboard(uid) {
       revenueChange.textContent = monthlyRevenue > 0 ? 'Expected this month' : 'No revenue yet';
       revenueChange.className = monthlyRevenue > 0 ? 'stat-change positive' : 'stat-change';
       
-      // Update pending payments display
-      document.getElementById('pending-payments').textContent = pendingCount;
-      
-      const paymentChange = document.getElementById('payment-change');
-      paymentChange.textContent = pendingCount > 0 ? 'Action needed' : 'All clear';
-      paymentChange.className = pendingCount > 0 ? 'stat-change negative' : 'stat-change';
-      
-      // Load pending/overdue payments in the list
-      const upcomingPayments = chartData.payments
-        .filter(p => p.status === 'pending' || p.status === 'overdue')
-        .sort((a, b) => a.dueDate - b.dueDate);
-      
-      loadPaymentsList(upcomingPayments);
+      // Load real payments from Firestore with live updates
+      loadRealPayments(uid);
       updateCharts();
     },
     (error) => console.error("Error loading tenants:", error)
@@ -364,6 +392,146 @@ function setupRealtimeDashboard(uid) {
     (snapshot) => loadActivityList(snapshot),
     (error) => console.error("Error loading activities:", error)
   );
+}
+
+// Add new function to load real payments with live updates
+function loadRealPayments(uid) {
+  // Clean up existing listener
+  if (paymentsListener) {
+    paymentsListener();
+  }
+
+  // Remove orderBy to avoid index requirement - sort in JavaScript instead
+  const paymentsQuery = query(
+    collection(db, "payments"),
+    where("landlordId", "==", uid)
+  );
+
+  paymentsListener = onSnapshot(
+    paymentsQuery,
+    (snapshot) => {
+      const realPayments = [];
+      snapshot.forEach(doc => {
+        const payment = doc.data();
+        const dueDate = payment.dueDate?.toDate ? payment.dueDate.toDate() : new Date(payment.dueDate);
+        
+        realPayments.push({ 
+          id: doc.id, 
+          ...payment,
+          dueDate: dueDate
+        });
+      });
+
+      // Sort by due date in JavaScript (newest first for processing)
+      realPayments.sort((a, b) => b.dueDate - a.dueDate);
+
+      // Generate expected payments from tenants
+      const expectedPayments = generatePaymentsFromTenants(chartData.tenants);
+
+      // Merge real payments with expected ones
+      chartData.payments = mergePayments(expectedPayments, realPayments);
+
+      // Count only pending/overdue payments (exclude paid)
+      const pendingCount = chartData.payments.filter(p => 
+        p.status === 'pending' || p.status === 'overdue'
+      ).length;
+
+      // Update pending payments display
+      document.getElementById('pending-payments').textContent = pendingCount;
+      
+      const paymentChange = document.getElementById('payment-change');
+      paymentChange.textContent = pendingCount > 0 ? 'Action needed' : 'All clear';
+      paymentChange.className = pendingCount > 0 ? 'stat-change negative' : 'stat-change positive';
+      
+      // Load only pending/overdue payments in the list (excluding paid)
+      const upcomingPayments = chartData.payments
+        .filter(p => p.status === 'pending' || p.status === 'overdue')
+        .sort((a, b) => a.dueDate - b.dueDate); // Sort by due date (oldest first for display)
+      
+      loadPaymentsList(upcomingPayments);
+      updateCharts();
+    },
+    (error) => console.error("Error loading payments:", error)
+  );
+}
+
+// Add new function to merge expected and real payments
+function mergePayments(expectedPayments, realPayments) {
+  const merged = [];
+  const currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0);
+
+  expectedPayments.forEach(expected => {
+    // Check if this payment exists in real payments
+    const real = realPayments.find(p => 
+      p.tenantId === expected.tenantId && 
+      p.dueDate && 
+      Math.abs(p.dueDate.getTime() - expected.dueDate.getTime()) < 86400000 // Within 1 day
+    );
+
+    if (real) {
+      // Use real payment data from Firestore (this includes the actual status)
+      // Only include if status is NOT "paid"
+      if (real.status !== 'paid') {
+        merged.push({
+          ...expected,
+          id: real.id,
+          status: real.status, // Use Firestore status (overdue, pending, etc)
+          paidDate: real.paidDate,
+          paidAmount: real.paidAmount,
+          paymentMethod: real.paymentMethod,
+          notes: real.notes,
+          dueDate: real.dueDate,
+          createdAt: real.createdAt,
+          updatedAt: real.updatedAt
+        });
+      }
+      // If status is "paid", don't add to merged array (it will be excluded)
+    } else {
+      // No real payment record exists yet, use expected payment
+      const dueDate = expected.dueDate;
+      const daysPastDue = Math.floor((currentDate - dueDate) / (1000 * 60 * 60 * 24));
+      
+      if (daysPastDue > 5 && expected.status === 'pending') {
+        expected.status = 'overdue';
+      }
+      
+      merged.push(expected);
+    }
+  });
+
+  // Add any real payments that don't match expected (manual entries)
+  // But ONLY if they are not marked as "paid"
+  realPayments.forEach(real => {
+    if (real.status === 'paid') {
+      return; // Skip paid payments
+    }
+    
+    const exists = merged.find(m => m.id === real.id);
+    
+    if (!exists) {
+      merged.push({
+        id: real.id,
+        tenantId: real.tenantId,
+        tenantName: real.tenantName || 'Unknown Tenant',
+        propertyId: real.propertyId,
+        unitNumber: real.unitNumber,
+        unitName: real.unitName || `Unit ${real.unitNumber}`,
+        amount: real.amount,
+        dueDate: real.dueDate,
+        status: real.status,
+        landlordId: real.landlordId,
+        paidDate: real.paidDate,
+        paidAmount: real.paidAmount,
+        paymentMethod: real.paymentMethod,
+        notes: real.notes,
+        createdAt: real.createdAt,
+        updatedAt: real.updatedAt
+      });
+    }
+  });
+
+  return merged;
 }
 
 // Initialize all charts
@@ -1170,3 +1338,184 @@ function getMonthLabels(count) {
 
 // Clean up listeners when page unloads
 window.addEventListener('beforeunload', cleanupListeners);
+
+// Add new function to open payments modal
+function openPaymentsModal() {
+  const paymentsModal = document.getElementById('paymentsModal');
+  if (!paymentsModal) return;
+
+  // Get all pending and overdue payments
+  allUpcomingPayments = chartData.payments
+    .filter(p => p.status === 'pending' || p.status === 'overdue')
+    .sort((a, b) => a.dueDate - b.dueDate);
+
+  // Reset filter
+  currentPaymentFilter = 'all';
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === 'all');
+  });
+
+  // Load payments
+  loadModalPayments(allUpcomingPayments);
+
+  // Show modal
+  paymentsModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePaymentsModal() {
+  const paymentsModal = document.getElementById('paymentsModal');
+  if (paymentsModal) {
+    paymentsModal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+function loadModalPayments(payments) {
+  const list = document.getElementById('paymentsModalList');
+  if (!list) return;
+
+  list.innerHTML = '';
+
+  if (!payments || payments.length === 0) {
+    list.innerHTML = `
+      <div class="no-payments-message">
+        <div class="icon">✅</div>
+        <h3>All Clear!</h3>
+        <p>No ${currentPaymentFilter === 'all' ? 'upcoming' : currentPaymentFilter} payments at the moment</p>
+      </div>
+    `;
+    return;
+  }
+
+  payments.forEach(payment => {
+    const item = document.createElement('div');
+    item.className = 'modal-payment-item';
+
+    const dueDate = payment.dueDate;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(dueDate);
+    due.setHours(0, 0, 0, 0);
+
+    const isOverdue = due < today;
+    const isDueToday = due.getTime() === today.getTime();
+    const amount = Number(payment.amount) || 0;
+
+    let dueDateText;
+    let dueClass;
+    if (isDueToday) {
+      dueDateText = '⚠️ Due Today';
+      dueClass = 'today';
+    } else if (isOverdue) {
+      const daysOverdue = Math.floor((today - due) / (1000 * 60 * 60 * 24));
+      dueDateText = `🔴 ${daysOverdue} ${daysOverdue === 1 ? 'day' : 'days'} overdue`;
+      dueClass = 'overdue';
+    } else {
+      const daysUntilDue = Math.floor((due - today) / (1000 * 60 * 60 * 24));
+      if (daysUntilDue === 1) {
+        dueDateText = '⚠️ Due Tomorrow';
+        dueClass = 'today';
+      } else if (daysUntilDue <= 7) {
+        dueDateText = `🟡 Due in ${daysUntilDue} days`;
+        dueClass = 'upcoming';
+      } else {
+        dueDateText = `🟢 Due ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        dueClass = 'upcoming';
+      }
+    }
+
+    item.innerHTML = `
+      <div class="modal-payment-header">
+        <div class="modal-payment-tenant">${escapeHtml(payment.tenantName || 'Unknown Tenant')}</div>
+        <div class="modal-payment-amount">₱${amount.toLocaleString()}</div>
+      </div>
+      <div class="modal-payment-details">
+        <div class="modal-payment-detail">
+          <span class="modal-payment-detail-icon">🏠</span>
+          <span>${escapeHtml(payment.unitName || payment.unitNumber || 'Unit')}</span>
+        </div>
+        <div class="modal-payment-detail">
+          <span class="modal-payment-detail-icon">📅</span>
+          <span>Due: ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+        </div>
+      </div>
+      <div class="modal-payment-footer">
+        <span class="modal-payment-due ${dueClass}">${dueDateText}</span>
+        <span class="payment-status ${isOverdue ? 'status-overdue' : isDueToday ? 'status-pending' : 'status-pending'}">
+          ${isOverdue ? 'Overdue' : isDueToday ? 'Due Today' : 'Upcoming'}
+        </span>
+      </div>
+    `;
+
+    list.appendChild(item);
+  });
+}
+
+// Update the "View All" link event listener
+document.addEventListener('DOMContentLoaded', function() {
+  // ...existing mobile menu code...
+
+  // Add event listener for View All link in Upcoming Payments
+  const viewAllPaymentsLink = document.querySelector('.card-header a[href="rent-tracker.html"]');
+  if (viewAllPaymentsLink) {
+    viewAllPaymentsLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      openPaymentsModal();
+    });
+  }
+
+  // Add event listeners for payment filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Update active state
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+
+      // Get filter value
+      currentPaymentFilter = this.dataset.filter;
+
+      // Filter payments
+      let filteredPayments = allUpcomingPayments;
+      if (currentPaymentFilter === 'pending') {
+        filteredPayments = allUpcomingPayments.filter(p => p.status === 'pending');
+      } else if (currentPaymentFilter === 'overdue') {
+        filteredPayments = allUpcomingPayments.filter(p => p.status === 'overdue');
+      }
+
+      // Reload list
+      loadModalPayments(filteredPayments);
+    });
+  });
+
+  // Add event listener for close payments modal button
+  const closePaymentsModalBtn = document.getElementById('closePaymentsModal');
+  if (closePaymentsModalBtn) {
+    closePaymentsModalBtn.addEventListener('click', closePaymentsModal);
+  }
+
+  // Add event listener for payments modal overlay
+  const paymentsModal = document.getElementById('paymentsModal');
+  if (paymentsModal) {
+    const overlay = paymentsModal.querySelector('.modal-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', closePaymentsModal);
+    }
+  }
+});
+
+// Update the keydown event listener to handle both modals
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const pricingModal = document.getElementById('pricingModal');
+    const paymentsModal = document.getElementById('paymentsModal');
+    
+    if (pricingModal && pricingModal.classList.contains('active')) {
+      closePricingModal();
+    }
+    
+    if (paymentsModal && paymentsModal.classList.contains('active')) {
+      closePaymentsModal();
+    }
+  }
+});
