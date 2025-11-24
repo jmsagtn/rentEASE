@@ -800,6 +800,14 @@ async function loadUserData() {
       const userData = userDoc.data();
       DOM.userNameEl.textContent = userData.username || 'User';
       DOM.userEmailEl.textContent = userData.email || currentUser.email || '';
+      
+      // Add plan badge logic
+      const userPlan = userData.plan || 'freemium';
+      const planBadge = document.getElementById('plan-badge');
+      const displayPlanName = userPlan === 'freemium' ? 'Free' : 
+                             userPlan === 'premium' ? 'Premium' : 'Platinum';
+      planBadge.textContent = displayPlanName;
+      planBadge.className = `plan-badge plan-${userPlan}`;
     }
   } catch (error) {
     console.error("Error loading user data:", error);
@@ -1044,7 +1052,7 @@ function createPaymentRow(payment) {
             onclick="changePaymentStatus('${payment.id}')" 
             title="Click to change status">
         ${capitalize(payment.status)}
-        <span class="status-edit-icon">✏️</span>
+        <span class="status-edit-icon"></span>
       </span>
     </td>
     <td>

@@ -25,6 +25,7 @@ const db = getFirestore(app);
 let paymentsListener = null;
 let allUpcomingPayments = [];
 let currentPaymentFilter = 'all';
+let paidPaymentRecords = new Map(); // Add this line
 
 // Mobile menu functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -138,6 +139,11 @@ function cleanupListeners() {
   Object.values(charts).forEach(chart => {
     if (chart) chart.destroy();
   });
+  
+  // Clear data
+  paidPaymentRecords.clear();
+  allUpcomingPayments = [];
+  chartData.payments = [];
 }
 
 // Load user data and apply plan restrictions
@@ -233,88 +239,111 @@ function applyPlanRestrictions(userData) {
   }
 }
 
+// Add new function to load paid payments
+async function loadPaidPayments(uid) {
+  try {
+    const paymentsQuery = query(collection(db, "payments"), where("landlordId", "==", uid));
+    
+    paymentsListener = onSnapshot(paymentsQuery, (snapshot) => {
+      paidPaymentRecords.clear();
+      snapshot.forEach((doc) => {
+        const payment = doc.data();
+        const dueDate = payment.dueDate?.toDate ? payment.dueDate.toDate() : new Date(payment.dueDate);
+        const key = `${payment.tenantId}_${dueDate.getTime()}`;
+        paidPaymentRecords.set(key, { id: doc.id, ...payment });
+      });
+      
+      // Regenerate payments after loading paid records
+      if (chartData.tenants.length > 0) {
+        generatePaymentsFromTenants();
+      }
+    });
+  } catch (error) {
+    console.error("Error loading paid payments:", error);
+  }
+}
+
 // Generate payments from tenants data
-function generatePaymentsFromTenants(tenants) {
+function generatePaymentsFromTenants() {
   const currentDate = new Date();
   const payments = [];
   
-  tenants.forEach(tenant => {
+  chartData.tenants.forEach(tenant => {
     if (tenant.status === 'active' && tenant.moveInDate) {
       const moveInDate = tenant.moveInDate.toDate ? tenant.moveInDate.toDate() : new Date(tenant.moveInDate);
       const leaseEndDate = tenant.leaseEndDate?.toDate ? tenant.leaseEndDate.toDate() : new Date(2100, 0, 1);
-      
-      // Get the day of month when rent is due (from moveInDate)
       const dueDay = moveInDate.getDate();
       
-      // Calculate current month's due date
-      const currentMonthDueDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), dueDay);
-      
-      // If current month's due date has passed, check next month
-      const nextMonthDueDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, dueDay);
-      
-      // Determine if we should show current or next month's payment
-      let dueDate;
-      let status;
-      
-      if (currentDate < currentMonthDueDate) {
-        // Current month's payment is still upcoming
-        dueDate = currentMonthDueDate;
-        status = 'pending';
-      } else if (currentDate.getDate() === dueDay) {
-        // Today is the due date
-        dueDate = currentMonthDueDate;
-        status = 'pending';
-      } else {
-        // Current month's due date has passed
-        // Check if it's overdue (more than 5 days past due)
-        const daysPastDue = Math.floor((currentDate - currentMonthDueDate) / (1000 * 60 * 60 * 24));
+      // Generate payments for last 6 months and next 3 months
+      for (let monthOffset = -6; monthOffset <= 3; monthOffset++) {
+        const dueDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + monthOffset, dueDay);
         
-        if (daysPastDue <= 5) {
-          // Still within grace period - show as pending
-          dueDate = currentMonthDueDate;
-          status = 'pending';
+        if (dueDate < moveInDate || dueDate > leaseEndDate) continue;
+        
+        const paymentId = `${tenant.id}_${dueDate.getTime()}`;
+        const paidRecord = paidPaymentRecords.get(paymentId);
+        
+        let status = 'pending';
+        
+        if (paidRecord) {
+          status = paidRecord.status || 'paid';
         } else {
-          // Overdue - show as overdue
-          dueDate = currentMonthDueDate;
-          status = 'overdue';
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const due = new Date(dueDate);
+          due.setHours(0, 0, 0, 0);
+          
+          if (due < today) {
+            const daysPastDue = Math.floor((today - due) / (1000 * 60 * 60 * 24));
+            status = daysPastDue > 5 ? 'overdue' : 'pending';
+          }
         }
-      }
-      
-      // Only include if the due date is within the lease period
-      if (dueDate >= moveInDate && dueDate <= leaseEndDate) {
-        payments.push({
-          id: `${tenant.id}_${dueDate.getTime()}`,
-          tenantId: tenant.id,
-          tenantName: `${tenant.firstName} ${tenant.lastName}`,
-          propertyId: tenant.propertyId,
-          unitNumber: tenant.unitNumber,
-          unitName: `Unit ${tenant.unitNumber}`,
-          amount: tenant.monthlyRent,
-          dueDate: dueDate,
-          status: status,
-          landlordId: tenant.landlordId
-        });
-      }
-      
-      // Also add next month's payment if current is not pending
-      if (status !== 'pending' && nextMonthDueDate <= leaseEndDate) {
-        payments.push({
-          id: `${tenant.id}_${nextMonthDueDate.getTime()}`,
-          tenantId: tenant.id,
-          tenantName: `${tenant.firstName} ${tenant.lastName}`,
-          propertyId: tenant.propertyId,
-          unitNumber: tenant.unitNumber,
-          unitName: `Unit ${tenant.unitNumber}`,
-          amount: tenant.monthlyRent,
-          dueDate: nextMonthDueDate,
-          status: 'pending',
-          landlordId: tenant.landlordId
-        });
+        
+        // Only add non-paid payments to the list
+        if (status !== 'paid') {
+          payments.push({
+            id: paymentId,
+            tenantId: tenant.id,
+            tenantName: `${tenant.firstName} ${tenant.lastName}`,
+            firstName: tenant.firstName,
+            lastName: tenant.lastName,
+            propertyId: tenant.propertyId,
+            unitNumber: tenant.unitNumber,
+            unitName: `Unit ${tenant.unitNumber}`,
+            amount: tenant.monthlyRent,
+            dueDate: dueDate,
+            status: status,
+            landlordId: tenant.landlordId,
+            month: dueDate.getMonth(),
+            year: dueDate.getFullYear(),
+            paidDate: paidRecord?.paidDate
+          });
+        }
       }
     }
   });
   
-  return payments;
+  // Sort by due date (oldest first)
+  payments.sort((a, b) => a.dueDate - b.dueDate);
+  
+  // Store all payments for charts and stats
+  chartData.payments = payments;
+  
+  // Update stats and UI
+  updateStats();
+  updateCharts();
+  
+  // Load only upcoming payments (not overdue from past months)
+  const upcomingPayments = payments.filter(p => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(p.dueDate);
+    due.setHours(0, 0, 0, 0);
+    return due >= today || p.status === 'overdue';
+  });
+  
+  loadPaymentsList(upcomingPayments);
+  allUpcomingPayments = upcomingPayments;
 }
 
 // Real-time dashboard setup
@@ -374,8 +403,11 @@ function setupRealtimeDashboard(uid) {
       revenueChange.textContent = monthlyRevenue > 0 ? 'Expected this month' : 'No revenue yet';
       revenueChange.className = monthlyRevenue > 0 ? 'stat-change positive' : 'stat-change';
       
-      // Load real payments from Firestore with live updates
-      loadRealPayments(uid);
+      // Generate payments when tenants data changes
+      if (paidPaymentRecords.size > 0 || chartData.tenants.length > 0) {
+        generatePaymentsFromTenants();
+      }
+      
       updateCharts();
     },
     (error) => console.error("Error loading tenants:", error)
@@ -392,146 +424,38 @@ function setupRealtimeDashboard(uid) {
     (snapshot) => loadActivityList(snapshot),
     (error) => console.error("Error loading activities:", error)
   );
+  
+  // Load paid payments with real-time updates
+  loadPaidPayments(uid);
 }
 
-// Add new function to load real payments with live updates
-function loadRealPayments(uid) {
-  // Clean up existing listener
-  if (paymentsListener) {
-    paymentsListener();
-  }
-
-  // Remove orderBy to avoid index requirement - sort in JavaScript instead
-  const paymentsQuery = query(
-    collection(db, "payments"),
-    where("landlordId", "==", uid)
+// Update stats
+function updateStats() {
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  
+  const currentMonthPayments = chartData.payments.filter(p => 
+    p.month === currentMonth && p.year === currentYear
   );
-
-  paymentsListener = onSnapshot(
-    paymentsQuery,
-    (snapshot) => {
-      const realPayments = [];
-      snapshot.forEach(doc => {
-        const payment = doc.data();
-        const dueDate = payment.dueDate?.toDate ? payment.dueDate.toDate() : new Date(payment.dueDate);
-        
-        realPayments.push({ 
-          id: doc.id, 
-          ...payment,
-          dueDate: dueDate
-        });
-      });
-
-      // Sort by due date in JavaScript (newest first for processing)
-      realPayments.sort((a, b) => b.dueDate - a.dueDate);
-
-      // Generate expected payments from tenants
-      const expectedPayments = generatePaymentsFromTenants(chartData.tenants);
-
-      // Merge real payments with expected ones
-      chartData.payments = mergePayments(expectedPayments, realPayments);
-
-      // Count only pending/overdue payments (exclude paid)
-      const pendingCount = chartData.payments.filter(p => 
-        p.status === 'pending' || p.status === 'overdue'
-      ).length;
-
-      // Update pending payments display
-      document.getElementById('pending-payments').textContent = pendingCount;
-      
-      const paymentChange = document.getElementById('payment-change');
-      paymentChange.textContent = pendingCount > 0 ? 'Action needed' : 'All clear';
-      paymentChange.className = pendingCount > 0 ? 'stat-change negative' : 'stat-change positive';
-      
-      // Load only pending/overdue payments in the list (excluding paid)
-      const upcomingPayments = chartData.payments
-        .filter(p => p.status === 'pending' || p.status === 'overdue')
-        .sort((a, b) => a.dueDate - b.dueDate); // Sort by due date (oldest first for display)
-      
-      loadPaymentsList(upcomingPayments);
-      updateCharts();
-    },
-    (error) => console.error("Error loading payments:", error)
-  );
-}
-
-// Add new function to merge expected and real payments
-function mergePayments(expectedPayments, realPayments) {
-  const merged = [];
-  const currentDate = new Date();
-  currentDate.setHours(0, 0, 0, 0);
-
-  expectedPayments.forEach(expected => {
-    // Check if this payment exists in real payments
-    const real = realPayments.find(p => 
-      p.tenantId === expected.tenantId && 
-      p.dueDate && 
-      Math.abs(p.dueDate.getTime() - expected.dueDate.getTime()) < 86400000 // Within 1 day
-    );
-
-    if (real) {
-      // Use real payment data from Firestore (this includes the actual status)
-      // Only include if status is NOT "paid"
-      if (real.status !== 'paid') {
-        merged.push({
-          ...expected,
-          id: real.id,
-          status: real.status, // Use Firestore status (overdue, pending, etc)
-          paidDate: real.paidDate,
-          paidAmount: real.paidAmount,
-          paymentMethod: real.paymentMethod,
-          notes: real.notes,
-          dueDate: real.dueDate,
-          createdAt: real.createdAt,
-          updatedAt: real.updatedAt
-        });
-      }
-      // If status is "paid", don't add to merged array (it will be excluded)
-    } else {
-      // No real payment record exists yet, use expected payment
-      const dueDate = expected.dueDate;
-      const daysPastDue = Math.floor((currentDate - dueDate) / (1000 * 60 * 60 * 24));
-      
-      if (daysPastDue > 5 && expected.status === 'pending') {
-        expected.status = 'overdue';
-      }
-      
-      merged.push(expected);
-    }
-  });
-
-  // Add any real payments that don't match expected (manual entries)
-  // But ONLY if they are not marked as "paid"
-  realPayments.forEach(real => {
-    if (real.status === 'paid') {
-      return; // Skip paid payments
-    }
-    
-    const exists = merged.find(m => m.id === real.id);
-    
-    if (!exists) {
-      merged.push({
-        id: real.id,
-        tenantId: real.tenantId,
-        tenantName: real.tenantName || 'Unknown Tenant',
-        propertyId: real.propertyId,
-        unitNumber: real.unitNumber,
-        unitName: real.unitName || `Unit ${real.unitNumber}`,
-        amount: real.amount,
-        dueDate: real.dueDate,
-        status: real.status,
-        landlordId: real.landlordId,
-        paidDate: real.paidDate,
-        paidAmount: real.paidAmount,
-        paymentMethod: real.paymentMethod,
-        notes: real.notes,
-        createdAt: real.createdAt,
-        updatedAt: real.updatedAt
-      });
-    }
-  });
-
-  return merged;
+  
+  const totalExpected = currentMonthPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const collected = currentMonthPayments.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
+  const pending = currentMonthPayments.filter(p => p.status === 'pending').reduce((sum, p) => sum + (p.amount || 0), 0);
+  const overdueCount = currentMonthPayments.filter(p => p.status === 'overdue').length;
+  
+  // Count only pending and overdue payments (exclude paid)
+  const pendingPaymentsCount = chartData.payments.filter(p => 
+    p.status === 'pending' || p.status === 'overdue'
+  ).length;
+  
+  document.getElementById('total-properties').textContent = chartData.properties.length;
+  document.getElementById('active-tenants').textContent = chartData.tenants.filter(t => t.status === 'active').length;
+  document.getElementById('monthly-revenue').textContent = `₱${totalExpected.toLocaleString()}`;
+  document.getElementById('pending-payments').textContent = pendingPaymentsCount;
+  
+  const paymentChange = document.getElementById('payment-change');
+  paymentChange.textContent = pendingPaymentsCount > 0 ? 'Action needed' : 'All clear';
+  paymentChange.className = pendingPaymentsCount > 0 ? 'stat-change negative' : 'stat-change positive';
 }
 
 // Initialize all charts
