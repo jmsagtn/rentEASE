@@ -16,13 +16,21 @@
     <nav id="navbar">
         <div class="nav-container">
             <div class="logo">
-            <a href="index.html"> <img src="images/rentease.svg" alt=""></a>
+                <a href="index.html"> <img src="images/rentease.svg" alt=""></a>
             </div>
-            <ul class="nav-menu">
+            
+            <!-- Add Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <ul class="nav-menu" id="navMenu">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="about.html">About</a></li>
-                <li><a href="pricing_page.html"class="active">Pricing</a></li>
-                <li><a href="contacts.html" >Contact</a></li>
+                <li><a href="pricing_page.html" class="active">Pricing</a></li>
+                <li><a href="contacts.html">Contact</a></li>
                 <li><a href="login.html" class="nav-cta" id="navGetStarted">Login</a></li>
             </ul>
         </div>
@@ -294,5 +302,27 @@
 
 
     <script src="js/pricing_page.js"></script>
+    <script>
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        if (mobileMenuToggle && navMenu) {
+            mobileMenuToggle.addEventListener('click', () => {
+                mobileMenuToggle.classList.toggle('active');
+                navMenu.classList.toggle('active');
+                document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+            });
+
+            // Close menu when clicking on a link
+            document.querySelectorAll('.nav-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenuToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+        }
+    </script>
 </body>
 </html>
