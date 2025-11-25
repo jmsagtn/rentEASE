@@ -759,28 +759,42 @@ window.showUpgradeAlert = function() {
 // Confirm delete
 window.confirmDelete = deleteAccount;
 
-// Event Listeners
+// Mobile menu functionality
 document.addEventListener('DOMContentLoaded', function() {
-  const forms = document.querySelectorAll('form');
-  
-  // Profile form (first form)
-  if (forms[0]) {
-    forms[0].addEventListener('submit', saveProfileChanges);
+  const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+  if (mobileMenuToggle && sidebar) {
+    mobileMenuToggle.addEventListener('click', function() {
+      sidebar.classList.toggle('mobile-open');
+      if (sidebarOverlay) {
+        sidebarOverlay.classList.toggle('active');
+      }
+    });
   }
 
-  // Password form (second form)
-  if (forms[1]) {
-    forms[1].addEventListener('submit', changePassword);
+  if (sidebarOverlay && sidebar) {
+    sidebarOverlay.addEventListener('click', function() {
+      sidebar.classList.remove('mobile-open');
+      sidebarOverlay.classList.remove('active');
+    });
   }
 
-  // Export button
-  const settingsItems = document.querySelectorAll('.setting-item');
-  settingsItems.forEach(item => {
-    const btn = item.querySelector('.btn-secondary');
-    if (btn && btn.textContent.includes('Export')) {
-      btn.addEventListener('click', exportUserData);
-    }
-  });
+  // Close sidebar when clicking navigation links on mobile
+  if (sidebar) {
+    const navLinks = sidebar.querySelectorAll('a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('mobile-open');
+          if (sidebarOverlay) {
+            sidebarOverlay.classList.remove('active');
+          }
+        }
+      });
+    });
+  }
 
   // Logout button
   const logoutBtn = document.querySelector('.logout-button');

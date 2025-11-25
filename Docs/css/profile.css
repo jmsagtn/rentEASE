@@ -609,34 +609,457 @@
       font-size: 14px;
     }
 
+    /* Mobile Menu Toggle - Add before responsive section */
+    .mobile-menu-toggle {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10000;
+      background: linear-gradient(135deg, #2fc4b2 0%, #107266 100%);
+      border: none;
+      border-radius: 12px;
+      width: 50px;
+      height: 50px;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(47, 196, 178, 0.3);
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease;
+    }
+
+    .mobile-menu-toggle:active {
+      transform: scale(0.95);
+    }
+
+    .mobile-menu-toggle span {
+      display: block;
+      line-height: 1;
+    }
+
+    /* Sidebar Overlay */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9998;
+      backdrop-filter: blur(4px);
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+    }
+
     /* Responsive Design */
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-
-      aside {
-        width: 100%;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid rgba(47, 196, 178, 0.2);
-      }
-
+    @media (max-width: 1024px) {
       main {
-        height: auto;
-        padding: 20px;
+        padding: 25px 30px;
       }
 
       .form-grid {
         grid-template-columns: 1fr;
       }
 
+      .subscription-content {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .subscription-limits {
+        min-width: auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      /* Show mobile menu toggle */
+      .mobile-menu-toggle {
+        display: flex !important;
+      }
+
+      .container {
+        flex-direction: row;
+      }
+
+      aside {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        z-index: 9999;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+      }
+
+      aside.mobile-open {
+        left: 0;
+      }
+
+      main {
+        width: 100%;
+        height: auto;
+        padding: 80px 20px 20px;
+        margin-left: 0;
+      }
+
+      .page-header {
+        margin-bottom: 20px;
+      }
+
+      .page-header h1 {
+        font-size: 24px;
+      }
+
+      .page-subtitle {
+        font-size: 14px;
+      }
+
+      /* Subscription Card */
+      .subscription-card {
+        padding: 20px;
+      }
+
+      .subscription-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .subscription-badge {
+        align-self: flex-start;
+      }
+
+      .subscription-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+
+      .subscription-details h3 {
+        font-size: 20px;
+      }
+
+      .subscription-details p {
+        font-size: 12px;
+      }
+
+      .subscription-content {
+        grid-template-columns: 1fr;
+      }
+
+      .subscription-features {
+        margin-bottom: 20px;
+      }
+
+      .subscription-features li {
+        font-size: 12px;
+        padding: 4px 0;
+      }
+
+      .subscription-action {
+        justify-content: stretch;
+      }
+
+      .subscription-action .btn {
+        width: 100%;
+      }
+
+      /* Alert */
+      .alert {
+        padding: 12px 16px;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .alert-icon {
+        font-size: 18px;
+      }
+
+      .alert-title {
+        font-size: 14px;
+      }
+
+      .alert-text {
+        font-size: 13px;
+      }
+
+      /* Card */
+      .card {
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+
+      .card-header {
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+      }
+
+      .card-title {
+        font-size: 18px;
+      }
+
+      .card-description {
+        font-size: 13px;
+      }
+
+      /* Form */
+      .form-grid {
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+
+      .form-input {
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+
+      textarea.form-input {
+        min-height: 80px;
+      }
+
+      /* Buttons */
       .btn-group {
         flex-direction: column;
+        gap: 10px;
+        margin-top: 16px;
       }
 
       .btn {
         width: 100%;
         justify-content: center;
+        padding: 12px 20px;
+        font-size: 14px;
+      }
+
+      /* Settings */
+      .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px 0;
+      }
+
+      .setting-title {
+        font-size: 14px;
+      }
+
+      .setting-description {
+        font-size: 12px;
+      }
+
+      .toggle-switch {
+        align-self: flex-start;
+      }
+
+      /* Limit Items */
+      .limit-item {
+        gap: 10px;
+      }
+
+      .limit-label,
+      .limit-value {
+        font-size: 12px;
+      }
+
+      .progress-bar {
+        height: 6px;
+      }
+
+      /* Modal */
+      .modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        padding: 24px 20px !important;
+        max-height: 85vh !important;
+      }
+
+      .modal-header h2 {
+        font-size: 20px;
+      }
+
+      .modal-header p {
+        font-size: 14px;
+      }
+
+      .modal-close {
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+        top: 16px;
+        right: 16px;
+      }
+
+      .pricing-cards {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .pricing-card {
+        padding: 24px;
+      }
+
+      .plan-header h3 {
+        font-size: 20px;
+      }
+
+      .plan-price .amount {
+        font-size: 40px;
+      }
+
+      .plan-price .currency {
+        font-size: 20px;
+      }
+
+      .plan-price .period {
+        font-size: 14px;
+      }
+
+      .plan-description {
+        font-size: 13px;
+      }
+
+      .plan-features li {
+        padding: 10px 0;
+        font-size: 13px;
+      }
+
+      .plan-button {
+        padding: 12px 20px;
+        font-size: 14px;
+      }
+
+      .popular-badge {
+        font-size: 11px;
+        padding: 5px 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main {
+        padding: 70px 16px 16px;
+      }
+
+      .page-header h1 {
+        font-size: 20px;
+      }
+
+      .page-subtitle {
+        font-size: 13px;
+      }
+
+      .subscription-card {
+        padding: 16px;
+      }
+
+      .subscription-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+      }
+
+      .subscription-details h3 {
+        font-size: 18px;
+      }
+
+      .subscription-details p {
+        font-size: 11px;
+      }
+
+      .subscription-features li {
+        font-size: 11px;
+      }
+
+      .card {
+        padding: 16px;
+      }
+
+      .card-title {
+        font-size: 16px;
+      }
+
+      .card-description {
+        font-size: 12px;
+      }
+
+      .form-label {
+        font-size: 12px;
+      }
+
+      .form-input {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .btn {
+        padding: 12px 16px;
+        font-size: 13px;
+      }
+
+      .setting-title {
+        font-size: 13px;
+      }
+
+      .setting-description {
+        font-size: 11px;
+      }
+
+      .alert-title {
+        font-size: 13px;
+      }
+
+      .alert-text {
+        font-size: 12px;
+      }
+
+      .limit-label,
+      .limit-value {
+        font-size: 11px;
+      }
+
+      .modal-content {
+        padding: 20px 16px !important;
+      }
+
+      .modal-header h2 {
+        font-size: 18px;
+      }
+
+      .modal-header p {
+        font-size: 13px;
+      }
+
+      .pricing-card {
+        padding: 20px;
+      }
+
+      .plan-header h3 {
+        font-size: 18px;
+      }
+
+      .plan-price .amount {
+        font-size: 36px;
+      }
+
+      .plan-price .currency {
+        font-size: 18px;
+      }
+
+      .plan-features li {
+        font-size: 12px;
+      }
+
+      .plan-button {
+        font-size: 13px;
       }
     }
