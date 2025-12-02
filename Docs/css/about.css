@@ -284,7 +284,6 @@ nav.scrolled {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
     transition: left 0.5s ease;
 }
 
@@ -934,20 +933,20 @@ footer::before {
     }
 
     .nav-menu {
-        position: fixed;
-        top: 80px;
-        left: -100%;
-        width: 100%;
-        height: calc(100vh - 80px);
-        background: rgba(13, 13, 18, 0.98);
-        backdrop-filter: var(--glass-blur);
+       position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: rgba(10, 10, 15, 0.98);
+        backdrop-filter: blur(20px);
         flex-direction: column;
-        gap: 0;
-        padding: 2rem 0;
-        transition: left 0.4s var(--ease-smooth);
-        overflow-y: auto;
-        z-index: 999;
-        box-shadow: var(--shadow-lg);
+        padding: 80px 30px 30px;
+        gap: 1.5rem;
+        transition: right 0.4s var(--ease-smooth);
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+        z-index: 1000;;
     }
 
     .nav-menu.active {
@@ -1863,4 +1862,11 @@ body {
 }
 
 /* Prevent zoom on input focus (iOS) */
-@media screen and
+@media screen and (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea {
+        font-size: 16px !important;
+    }
+}

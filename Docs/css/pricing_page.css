@@ -1032,21 +1032,21 @@ html {
     .mobile-menu-toggle {
         display: flex;
     }
-
     .nav-menu {
-        position: fixed;
-        top: 80px;
-        left: -100%;
-        width: 100%;
-        height: calc(100vh - 80px);
+       position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
         background: rgba(10, 10, 15, 0.98);
         backdrop-filter: blur(20px);
         flex-direction: column;
-        gap: 0;
-        padding: 2rem 0;
-        transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow-y: auto;
-        z-index: 999;
+        padding: 80px 30px 30px;
+        gap: 1.5rem;
+        transition: right 0.4s var(--ease-smooth);
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+        z-index: 1000;;
     }
 
     .nav-menu.active {
