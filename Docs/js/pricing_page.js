@@ -35,20 +35,20 @@ function updatePrices() {
             
             if (currentCycle === 'yearly') {
                 // Update to yearly pricing
-                priceElement.textContent = '$' + yearlyPrice;
+                priceElement.textContent = '₱' + yearlyPrice;
                 periodElement.textContent = '/yr';
                 
                 // Calculate and display savings
                 if (monthlyPrice > 0) {
                     const monthlyCost = monthlyPrice * 12;
                     const savings = monthlyCost - yearlyPrice;
-                    savingsElement.textContent = 'Save $' + savings + '/year';
+                    savingsElement.textContent = 'Save ₱' + savings + '/year';
                 } else {
                     savingsElement.textContent = '';
                 }
             } else {
                 // Update to monthly pricing
-                priceElement.textContent = '$' + monthlyPrice;
+                priceElement.textContent = '₱' + monthlyPrice;
                 periodElement.textContent = '/mo';
                 savingsElement.textContent = '';
             }

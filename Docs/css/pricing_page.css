@@ -660,9 +660,7 @@ nav.scrolled {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg), 0 8px 30px rgba(47, 196, 178, 0.6);
 }
-    box-shadow: 0 8px 30px rgba(47, 196, 178, 0.6);
-    transform: translateY(-3px) scale(1.02);
-}
+
 
 /* Features List */
 .features-list {
