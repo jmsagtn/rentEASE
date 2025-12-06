@@ -1,36 +1,77 @@
+<!-- sign_up page -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign Up | RentEase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/sign_up.css">
 </head>
 <body>
   <div class="signup-container">
     <h1>Create Account</h1>
-    <p>Join RentEase and start your journey</p>
+    <p id="subtitle">Join RentEase and start your journey</p>
 
-<form id="signup-form">
-    <div class="form-group">
-      <label for="username">Username</label>
-      <input type="text" id="username" placeholder="Enter your username" required autocomplete="username" />
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+      <div class="step active" id="step1">1</div>
+      <div class="step-line" id="line1"></div>
+      <div class="step" id="step2">2</div>
     </div>
 
-    <div class="form-group">
-      <label for="email">Email Address</label>
-      <input type="email" id="email" placeholder="Enter your email" required autocomplete="email" />
+    <!-- Step 1: Account Details -->
+    <div class="form-step active" id="form-step-1">
+      <form id="signup-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Enter your username" required autocomplete="username" />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="Enter your email" required autocomplete="email" />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="At least 6 characters" required autocomplete="new-password" />
+        </div>
+
+        <button type="submit" id="send-code-btn">Send Verification Code</button>
+        <div id="message-step1" class="message"></div>
+      </form>
     </div>
 
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter your password" required autocomplete="new-password" />
-    </div>
+    <!-- Step 2: Verification Code -->
+    <div class="form-step" id="form-step-2">
+      <p style="margin-bottom: 24px; color: #64948d; font-size: 0.9rem;">
+        We've sent a 4-digit code to <strong id="email-display"></strong>
+      </p>
 
-    <button type="submit">Sign Up</button>
-    <div id="message" class="message"></div>
-</form>
-</div>
+      <form id="verify-form">
+        <div class="code-inputs">
+          <input type="text" maxlength="1" class="code-input" id="code1" pattern="[0-9]" inputmode="numeric" autocomplete="off" />
+          <input type="text" maxlength="1" class="code-input" id="code2" pattern="[0-9]" inputmode="numeric" autocomplete="off" />
+          <input type="text" maxlength="1" class="code-input" id="code3" pattern="[0-9]" inputmode="numeric" autocomplete="off" />
+          <input type="text" maxlength="1" class="code-input" id="code4" pattern="[0-9]" inputmode="numeric" autocomplete="off" />
+        </div>
+
+        <button type="submit" id="verify-btn">Verify & Create Account</button>
+        <button type="button" class="secondary-button" id="back-btn">Go Back</button>
+        
+        <div id="message-step2" class="message"></div>
+
+        <div class="resend-text">
+          Didn't receive the code? 
+          <a class="resend-link" id="resend-link">Resend Code</a>
+          <span id="resend-timer"></span>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script type="module" src="js/signup_page.js"></script>
 </body>

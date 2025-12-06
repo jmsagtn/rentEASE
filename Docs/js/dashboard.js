@@ -1,3 +1,4 @@
+// Dashboard page
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, query, where, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
@@ -17,6 +18,46 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+
+
+// Add at the beginning after imports
+let paymentsListener = null;
+let allUpcomingPayments = [];
+let currentPaymentFilter = 'all';
+let paidPaymentRecords = new Map(); // Add this line
+
+// Mobile menu functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+  if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener('click', function() {
+      sidebar.classList.toggle('mobile-open');
+      sidebarOverlay.classList.toggle('active');
+    });
+  }
+
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', function() {
+      sidebar.classList.remove('mobile-open');
+      sidebarOverlay.classList.remove('active');
+    });
+  }
+
+  // Close sidebar when clicking navigation links on mobile
+  const navLinks = sidebar.querySelectorAll('a');
+  navLinks.forEach(link => {
+    link.addEventListener('click', function() {
+      if (window.innerWidth <= 768) {
+        sidebar.classList.remove('mobile-open');
+        sidebarOverlay.classList.remove('active');
+      }
+    });
+  });
+});
 
 // Plan limits configuration
 const PLAN_LIMITS = {
@@ -86,12 +127,23 @@ onAuthStateChanged(auth, async (user) => {
 
 // Clean up all listeners
 function cleanupListeners() {
+  // Clean up payment listener
+  if (paymentsListener) {
+    paymentsListener();
+    paymentsListener = null;
+  }
+  
   Object.values(unsubscribers).forEach(unsub => {
     if (unsub) unsub();
   });
   Object.values(charts).forEach(chart => {
     if (chart) chart.destroy();
   });
+  
+  // Clear data
+  paidPaymentRecords.clear();
+  allUpcomingPayments = [];
+  chartData.payments = [];
 }
 
 // Load user data and apply plan restrictions
@@ -187,88 +239,111 @@ function applyPlanRestrictions(userData) {
   }
 }
 
+// Add new function to load paid payments
+async function loadPaidPayments(uid) {
+  try {
+    const paymentsQuery = query(collection(db, "payments"), where("landlordId", "==", uid));
+    
+    paymentsListener = onSnapshot(paymentsQuery, (snapshot) => {
+      paidPaymentRecords.clear();
+      snapshot.forEach((doc) => {
+        const payment = doc.data();
+        const dueDate = payment.dueDate?.toDate ? payment.dueDate.toDate() : new Date(payment.dueDate);
+        const key = `${payment.tenantId}_${dueDate.getTime()}`;
+        paidPaymentRecords.set(key, { id: doc.id, ...payment });
+      });
+      
+      // Regenerate payments after loading paid records
+      if (chartData.tenants.length > 0) {
+        generatePaymentsFromTenants();
+      }
+    });
+  } catch (error) {
+    console.error("Error loading paid payments:", error);
+  }
+}
+
 // Generate payments from tenants data
-function generatePaymentsFromTenants(tenants) {
+function generatePaymentsFromTenants() {
   const currentDate = new Date();
   const payments = [];
   
-  tenants.forEach(tenant => {
+  chartData.tenants.forEach(tenant => {
     if (tenant.status === 'active' && tenant.moveInDate) {
       const moveInDate = tenant.moveInDate.toDate ? tenant.moveInDate.toDate() : new Date(tenant.moveInDate);
       const leaseEndDate = tenant.leaseEndDate?.toDate ? tenant.leaseEndDate.toDate() : new Date(2100, 0, 1);
-      
-      // Get the day of month when rent is due (from moveInDate)
       const dueDay = moveInDate.getDate();
       
-      // Calculate current month's due date
-      const currentMonthDueDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), dueDay);
-      
-      // If current month's due date has passed, check next month
-      const nextMonthDueDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, dueDay);
-      
-      // Determine if we should show current or next month's payment
-      let dueDate;
-      let status;
-      
-      if (currentDate < currentMonthDueDate) {
-        // Current month's payment is still upcoming
-        dueDate = currentMonthDueDate;
-        status = 'pending';
-      } else if (currentDate.getDate() === dueDay) {
-        // Today is the due date
-        dueDate = currentMonthDueDate;
-        status = 'pending';
-      } else {
-        // Current month's due date has passed
-        // Check if it's overdue (more than 5 days past due)
-        const daysPastDue = Math.floor((currentDate - currentMonthDueDate) / (1000 * 60 * 60 * 24));
+      // Generate payments for last 6 months and next 3 months
+      for (let monthOffset = -6; monthOffset <= 3; monthOffset++) {
+        const dueDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + monthOffset, dueDay);
         
-        if (daysPastDue <= 5) {
-          // Still within grace period - show as pending
-          dueDate = currentMonthDueDate;
-          status = 'pending';
+        if (dueDate < moveInDate || dueDate > leaseEndDate) continue;
+        
+        const paymentId = `${tenant.id}_${dueDate.getTime()}`;
+        const paidRecord = paidPaymentRecords.get(paymentId);
+        
+        let status = 'pending';
+        
+        if (paidRecord) {
+          status = paidRecord.status || 'paid';
         } else {
-          // Overdue - show as overdue
-          dueDate = currentMonthDueDate;
-          status = 'overdue';
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const due = new Date(dueDate);
+          due.setHours(0, 0, 0, 0);
+          
+          if (due < today) {
+            const daysPastDue = Math.floor((today - due) / (1000 * 60 * 60 * 24));
+            status = daysPastDue > 5 ? 'overdue' : 'pending';
+          }
         }
-      }
-      
-      // Only include if the due date is within the lease period
-      if (dueDate >= moveInDate && dueDate <= leaseEndDate) {
-        payments.push({
-          id: `${tenant.id}_${dueDate.getTime()}`,
-          tenantId: tenant.id,
-          tenantName: `${tenant.firstName} ${tenant.lastName}`,
-          propertyId: tenant.propertyId,
-          unitNumber: tenant.unitNumber,
-          unitName: `Unit ${tenant.unitNumber}`,
-          amount: tenant.monthlyRent,
-          dueDate: dueDate,
-          status: status,
-          landlordId: tenant.landlordId
-        });
-      }
-      
-      // Also add next month's payment if current is not pending
-      if (status !== 'pending' && nextMonthDueDate <= leaseEndDate) {
-        payments.push({
-          id: `${tenant.id}_${nextMonthDueDate.getTime()}`,
-          tenantId: tenant.id,
-          tenantName: `${tenant.firstName} ${tenant.lastName}`,
-          propertyId: tenant.propertyId,
-          unitNumber: tenant.unitNumber,
-          unitName: `Unit ${tenant.unitNumber}`,
-          amount: tenant.monthlyRent,
-          dueDate: nextMonthDueDate,
-          status: 'pending',
-          landlordId: tenant.landlordId
-        });
+        
+        // Only add non-paid payments to the list
+        if (status !== 'paid') {
+          payments.push({
+            id: paymentId,
+            tenantId: tenant.id,
+            tenantName: `${tenant.firstName} ${tenant.lastName}`,
+            firstName: tenant.firstName,
+            lastName: tenant.lastName,
+            propertyId: tenant.propertyId,
+            unitNumber: tenant.unitNumber,
+            unitName: `Unit ${tenant.unitNumber}`,
+            amount: tenant.monthlyRent,
+            dueDate: dueDate,
+            status: status,
+            landlordId: tenant.landlordId,
+            month: dueDate.getMonth(),
+            year: dueDate.getFullYear(),
+            paidDate: paidRecord?.paidDate
+          });
+        }
       }
     }
   });
   
-  return payments;
+  // Sort by due date (oldest first)
+  payments.sort((a, b) => a.dueDate - b.dueDate);
+  
+  // Store all payments for charts and stats
+  chartData.payments = payments;
+  
+  // Update stats and UI
+  updateStats();
+  updateCharts();
+  
+  // Load only upcoming payments (not overdue from past months)
+  const upcomingPayments = payments.filter(p => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(p.dueDate);
+    due.setHours(0, 0, 0, 0);
+    return due >= today || p.status === 'overdue';
+  });
+  
+  loadPaymentsList(upcomingPayments);
+  allUpcomingPayments = upcomingPayments;
 }
 
 // Real-time dashboard setup
@@ -314,12 +389,6 @@ function setupRealtimeDashboard(uid) {
         }
       });
 
-      // Generate payments from tenants
-      chartData.payments = generatePaymentsFromTenants(chartData.tenants);
-      
-      // Count pending payments
-      const pendingCount = chartData.payments.filter(p => p.status === 'pending' || p.status === 'overdue').length;
-
       document.getElementById('active-tenants').textContent = tenantsCount;
       
       const tenantChange = document.getElementById('tenant-change');
@@ -334,19 +403,11 @@ function setupRealtimeDashboard(uid) {
       revenueChange.textContent = monthlyRevenue > 0 ? 'Expected this month' : 'No revenue yet';
       revenueChange.className = monthlyRevenue > 0 ? 'stat-change positive' : 'stat-change';
       
-      // Update pending payments display
-      document.getElementById('pending-payments').textContent = pendingCount;
+      // Generate payments when tenants data changes
+      if (paidPaymentRecords.size > 0 || chartData.tenants.length > 0) {
+        generatePaymentsFromTenants();
+      }
       
-      const paymentChange = document.getElementById('payment-change');
-      paymentChange.textContent = pendingCount > 0 ? 'Action needed' : 'All clear';
-      paymentChange.className = pendingCount > 0 ? 'stat-change negative' : 'stat-change';
-      
-      // Load pending/overdue payments in the list
-      const upcomingPayments = chartData.payments
-        .filter(p => p.status === 'pending' || p.status === 'overdue')
-        .sort((a, b) => a.dueDate - b.dueDate);
-      
-      loadPaymentsList(upcomingPayments);
       updateCharts();
     },
     (error) => console.error("Error loading tenants:", error)
@@ -363,6 +424,38 @@ function setupRealtimeDashboard(uid) {
     (snapshot) => loadActivityList(snapshot),
     (error) => console.error("Error loading activities:", error)
   );
+  
+  // Load paid payments with real-time updates
+  loadPaidPayments(uid);
+}
+
+// Update stats
+function updateStats() {
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  
+  const currentMonthPayments = chartData.payments.filter(p => 
+    p.month === currentMonth && p.year === currentYear
+  );
+  
+  const totalExpected = currentMonthPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const collected = currentMonthPayments.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
+  const pending = currentMonthPayments.filter(p => p.status === 'pending').reduce((sum, p) => sum + (p.amount || 0), 0);
+  const overdueCount = currentMonthPayments.filter(p => p.status === 'overdue').length;
+  
+  // Count only pending and overdue payments (exclude paid)
+  const pendingPaymentsCount = chartData.payments.filter(p => 
+    p.status === 'pending' || p.status === 'overdue'
+  ).length;
+  
+  document.getElementById('total-properties').textContent = chartData.properties.length;
+  document.getElementById('active-tenants').textContent = chartData.tenants.filter(t => t.status === 'active').length;
+  document.getElementById('monthly-revenue').textContent = `₱${totalExpected.toLocaleString()}`;
+  document.getElementById('pending-payments').textContent = pendingPaymentsCount;
+  
+  const paymentChange = document.getElementById('payment-change');
+  paymentChange.textContent = pendingPaymentsCount > 0 ? 'Action needed' : 'All clear';
+  paymentChange.className = pendingPaymentsCount > 0 ? 'stat-change negative' : 'stat-change positive';
 }
 
 // Initialize all charts
@@ -957,14 +1050,156 @@ const pricingModal = document.getElementById('pricingModal');
 const closeModalBtn = document.getElementById('closeModal');
 const modalOverlay = document.querySelector('.modal-overlay');
 
-function openPricingModal() {
+function openPricingModal(currentPlan) {
+  if (!pricingModal) {
+    showError('Pricing modal not found. Please refresh the page.');
+    return;
+  }
+
+  // Get pricing cards container
+  const pricingCards = pricingModal.querySelector('.pricing-cards');
+  if (!pricingCards) return;
+
+  // Clear existing cards
+  pricingCards.innerHTML = '';
+
+  // Define plans to show based on current plan
+  const plans = [];
+  
+  if (currentPlan === 'freemium') {
+    // Show both Pro and Premium plans
+    plans.push({
+      name: 'premium',
+      displayName: 'Premium',
+      price: 499,
+      description: 'For growing landlords',
+      features: [
+        'Up to 20 properties',
+        'Advanced payment tracking',
+        'Automated reminders',
+        'Financial reports',
+        'Priority support'
+      ],
+      isFeatured: true
+    });
+    
+    plans.push({
+      name: 'platinum',
+      displayName: 'Platinum',
+      price: 999,
+      description: 'For property managers',
+      features: [
+        'Unlimited properties',
+        'All Pro features',
+        'Multi-user access',
+        'Custom integrations',
+        '24/7 support'
+      ],
+      isFeatured: false
+    });
+  } else if (currentPlan === 'premium') {
+    // Show only Premium plan
+    plans.push({
+      name: 'platinum',
+      displayName: 'Platinum',
+      price: 999,
+      description: 'For property managers',
+      features: [
+        'Unlimited properties',
+        'All Pro features',
+        'Multi-user access',
+        'Custom integrations',
+        '24/7 support'
+      ],
+      isFeatured: true
+    });
+  }
+
+  // Generate HTML for each plan
+  plans.forEach(plan => {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = `pricing-card${plan.isFeatured ? ' featured' : ''}`;
+    
+    cardDiv.innerHTML = `
+      ${plan.isFeatured ? '<div class="popular-badge">Most Popular</div>' : ''}
+      <div class="plan-header">
+        <h3>${plan.displayName}</h3>
+        <div class="plan-price">
+          <span class="currency">₱</span>
+          <span class="amount">${plan.price}</span>
+          <span class="period">/month</span>
+        </div>
+        <p class="plan-description">${plan.description}</p>
+      </div>
+      <ul class="plan-features">
+        ${plan.features.map(feature => `<li><span class="check">✓</span> ${feature}</li>`).join('')}
+      </ul>
+      <button class="plan-button ${plan.isFeatured ? 'pro-button' : 'enterprise-button'}">
+        ${plan.isFeatured ? 'Recommended' : 'Continue'}
+      </button>
+    `;
+    
+    pricingCards.appendChild(cardDiv);
+  });
+
+  // Add event listeners to plan buttons
+  const planButtons = pricingModal.querySelectorAll('.plan-button');
+  planButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const planCard = this.closest('.pricing-card');
+      const planNameElement = planCard.querySelector('h3');
+      const planAmountElement = planCard.querySelector('.amount');
+      
+      let selectedPlan = {
+        name: '',
+        displayName: planNameElement.textContent,
+        price: parseInt(planAmountElement.textContent),
+        currency: '₱'
+      };
+      
+      // Map UI names to backend plan names
+      if (planNameElement.textContent === 'Pro') {
+        selectedPlan.name = 'premium';
+        selectedPlan.features = [
+          'Up to 20 properties',
+          'Advanced payment tracking',
+          'Automated reminders',
+          'Financial reports',
+          'Priority support'
+        ];
+      } else if (planNameElement.textContent === 'Premium') {
+        selectedPlan.name = 'platinum';
+        selectedPlan.features = [
+          'Unlimited properties',
+          'All Pro features',
+          'Multi-user access',
+          'Custom integrations',
+          '24/7 support'
+        ];
+      }
+      
+      sessionStorage.setItem('selectedPlan', JSON.stringify(selectedPlan));
+      sessionStorage.setItem('returnTo', 'dashboard.html');
+      
+      button.disabled = true;
+      button.textContent = 'Redirecting...';
+      
+      setTimeout(() => {
+        window.location.href = 'payment.html';
+      }, 500);
+    });
+  });
+
+  // Show modal
   pricingModal.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
 
 function closePricingModal() {
-  pricingModal.classList.remove('active');
-  document.body.style.overflow = '';
+  if (pricingModal) {
+    pricingModal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
 }
 
 const upgradeBanner = document.getElementById('upgrade-banner');
@@ -973,7 +1208,7 @@ if (upgradeBanner) {
   if (upgradeBtn) {
     upgradeBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      openPricingModal();
+      openPricingModal(userPlan);
     });
   }
 }
@@ -987,57 +1222,12 @@ if (modalOverlay) {
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && pricingModal.classList.contains('active')) {
+  if (e.key === 'Escape' && pricingModal && pricingModal.classList.contains('active')) {
     closePricingModal();
   }
 });
 
-// Handle plan button clicks
-const planButtons = document.querySelectorAll('.plan-button');
-planButtons.forEach(button => {
-  button.addEventListener('click', function() {
-    const planCard = this.closest('.pricing-card');
-    const planNameElement = planCard.querySelector('h3');
-    const planAmountElement = planCard.querySelector('.amount');
-    
-    let selectedPlan = {
-      name: '',
-      displayName: planNameElement.textContent,
-      price: parseInt(planAmountElement.textContent),
-      currency: '₱'
-    };
-    
-    // Map UI names to backend plan names
-    if (planNameElement.textContent === 'Pro') {
-      selectedPlan.name = 'premium';
-      selectedPlan.features = [
-        'Up to 20 properties',
-        'Advanced payment tracking',
-        'Automated reminders',
-        'Financial reports',
-        'Priority support'
-      ];
-    } else if (planNameElement.textContent === 'Premium') {
-      selectedPlan.name = 'platinum';
-      selectedPlan.features = [
-        'Unlimited properties',
-        'All Pro features',
-        'Multi-user access',
-        'Custom integrations',
-        '24/7 support'
-      ];
-    }
-    
-    sessionStorage.setItem('selectedPlan', JSON.stringify(selectedPlan));
-    
-    button.disabled = true;
-    button.textContent = 'Redirecting...';
-    
-    setTimeout(() => {
-      window.location.href = 'payment.html';
-    }, 500);
-  });
-});
+
 
 // Revenue period selector
 const revenuePeriodSelect = document.getElementById('revenue-period');
@@ -1072,3 +1262,184 @@ function getMonthLabels(count) {
 
 // Clean up listeners when page unloads
 window.addEventListener('beforeunload', cleanupListeners);
+
+// Add new function to open payments modal
+function openPaymentsModal() {
+  const paymentsModal = document.getElementById('paymentsModal');
+  if (!paymentsModal) return;
+
+  // Get all pending and overdue payments
+  allUpcomingPayments = chartData.payments
+    .filter(p => p.status === 'pending' || p.status === 'overdue')
+    .sort((a, b) => a.dueDate - b.dueDate);
+
+  // Reset filter
+  currentPaymentFilter = 'all';
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === 'all');
+  });
+
+  // Load payments
+  loadModalPayments(allUpcomingPayments);
+
+  // Show modal
+  paymentsModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePaymentsModal() {
+  const paymentsModal = document.getElementById('paymentsModal');
+  if (paymentsModal) {
+    paymentsModal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+function loadModalPayments(payments) {
+  const list = document.getElementById('paymentsModalList');
+  if (!list) return;
+
+  list.innerHTML = '';
+
+  if (!payments || payments.length === 0) {
+    list.innerHTML = `
+      <div class="no-payments-message">
+        <div class="icon">✅</div>
+        <h3>All Clear!</h3>
+        <p>No ${currentPaymentFilter === 'all' ? 'upcoming' : currentPaymentFilter} payments at the moment</p>
+      </div>
+    `;
+    return;
+  }
+
+  payments.forEach(payment => {
+    const item = document.createElement('div');
+    item.className = 'modal-payment-item';
+
+    const dueDate = payment.dueDate;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(dueDate);
+    due.setHours(0, 0, 0, 0);
+
+    const isOverdue = due < today;
+    const isDueToday = due.getTime() === today.getTime();
+    const amount = Number(payment.amount) || 0;
+
+    let dueDateText;
+    let dueClass;
+    if (isDueToday) {
+      dueDateText = '⚠️ Due Today';
+      dueClass = 'today';
+    } else if (isOverdue) {
+      const daysOverdue = Math.floor((today - due) / (1000 * 60 * 60 * 24));
+      dueDateText = `🔴 ${daysOverdue} ${daysOverdue === 1 ? 'day' : 'days'} overdue`;
+      dueClass = 'overdue';
+    } else {
+      const daysUntilDue = Math.floor((due - today) / (1000 * 60 * 60 * 24));
+      if (daysUntilDue === 1) {
+        dueDateText = '⚠️ Due Tomorrow';
+        dueClass = 'today';
+      } else if (daysUntilDue <= 7) {
+        dueDateText = `🟡 Due in ${daysUntilDue} days`;
+        dueClass = 'upcoming';
+      } else {
+        dueDateText = `🟢 Due ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        dueClass = 'upcoming';
+      }
+    }
+
+    item.innerHTML = `
+      <div class="modal-payment-header">
+        <div class="modal-payment-tenant">${escapeHtml(payment.tenantName || 'Unknown Tenant')}</div>
+        <div class="modal-payment-amount">₱${amount.toLocaleString()}</div>
+      </div>
+      <div class="modal-payment-details">
+        <div class="modal-payment-detail">
+          <span class="modal-payment-detail-icon">🏠</span>
+          <span>${escapeHtml(payment.unitName || payment.unitNumber || 'Unit')}</span>
+        </div>
+        <div class="modal-payment-detail">
+          <span class="modal-payment-detail-icon">📅</span>
+          <span>Due: ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+        </div>
+      </div>
+      <div class="modal-payment-footer">
+        <span class="modal-payment-due ${dueClass}">${dueDateText}</span>
+        <span class="payment-status ${isOverdue ? 'status-overdue' : isDueToday ? 'status-pending' : 'status-pending'}">
+          ${isOverdue ? 'Overdue' : isDueToday ? 'Due Today' : 'Upcoming'}
+        </span>
+      </div>
+    `;
+
+    list.appendChild(item);
+  });
+}
+
+// Update the "View All" link event listener
+document.addEventListener('DOMContentLoaded', function() {
+  // ...existing mobile menu code...
+
+  // Add event listener for View All link in Upcoming Payments
+  const viewAllPaymentsLink = document.querySelector('.card-header a[href="rent-tracker.html"]');
+  if (viewAllPaymentsLink) {
+    viewAllPaymentsLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      openPaymentsModal();
+    });
+  }
+
+  // Add event listeners for payment filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Update active state
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+
+      // Get filter value
+      currentPaymentFilter = this.dataset.filter;
+
+      // Filter payments
+      let filteredPayments = allUpcomingPayments;
+      if (currentPaymentFilter === 'pending') {
+        filteredPayments = allUpcomingPayments.filter(p => p.status === 'pending');
+      } else if (currentPaymentFilter === 'overdue') {
+        filteredPayments = allUpcomingPayments.filter(p => p.status === 'overdue');
+      }
+
+      // Reload list
+      loadModalPayments(filteredPayments);
+    });
+  });
+
+  // Add event listener for close payments modal button
+  const closePaymentsModalBtn = document.getElementById('closePaymentsModal');
+  if (closePaymentsModalBtn) {
+    closePaymentsModalBtn.addEventListener('click', closePaymentsModal);
+  }
+
+  // Add event listener for payments modal overlay
+  const paymentsModal = document.getElementById('paymentsModal');
+  if (paymentsModal) {
+    const overlay = paymentsModal.querySelector('.modal-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', closePaymentsModal);
+    }
+  }
+});
+
+// Update the keydown event listener to handle both modals
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const pricingModal = document.getElementById('pricingModal');
+    const paymentsModal = document.getElementById('paymentsModal');
+    
+    if (pricingModal && pricingModal.classList.contains('active')) {
+      closePricingModal();
+    }
+    
+    if (paymentsModal && paymentsModal.classList.contains('active')) {
+      closePaymentsModal();
+    }
+  }
+});

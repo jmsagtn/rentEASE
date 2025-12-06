@@ -11,6 +11,14 @@
 </head>
 
 <body>
+  <!-- Mobile Menu Toggle Button -->
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">
+    <span>☰</span>
+  </button>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <div class="container">
     <!-- Sidebar Navigation -->
     <aside>
@@ -28,31 +36,31 @@
       <div class="sidebar-nav">
         <ul>
           <li><a href="dashboard.html">
-            <span class="nav-icon">📊</span>
+            <span class="nav-icon"><img src="images/white-dash.svg" alt="Dashboard"></span>
             <span>Dashboard</span>
           </a></li>
           <li><a href="properties.html" class="active">
-            <span class="nav-icon">🏠</span>
+            <span class="nav-icon"><img src="images/white-propicon.svg" alt="Properties"></span>
             <span>Properties</span>
           </a></li>
-          <li><a href="tenants.html">
-            <span class="nav-icon">👥</span>
+          <li><a href="tenants.html" >
+            <span class="nav-icon"><img src="images/white-tennants.svg" alt="Tenants"></span>
             <span>Tenants</span>
           </a></li>
           <li><a href="rent-tracker.html">
-            <span class="nav-icon">💰</span>
+            <span class="nav-icon"><img src="images/white-renticon.svg" alt="Rent-tracker"></span>
             <span>Rent Tracker</span>
           </a></li>
           <li><a href="profile.html">
-            <span class="nav-icon">⚙️</span>
+            <span class="nav-icon"><img src="images/white-setting.svg" alt="Profile"></span>
             <span>Profile / Settings</span>
           </a></li>
         </ul>
       </div>
 
       <div class="sidebar-footer">
-        <button class="logout-button" id="logout-btn">
-          <span>🚪</span>
+        <button class="logout-button">
+          <span><img src="images/logout.svg" alt="logout"></span>
           <span>Logout</span>
         </button>
       </div>
@@ -285,7 +293,7 @@
     <div class="property-modal property-details-content">
       <div class="property-modal-header">
         <h2 id="details-property-name">Property Details</h2>
-        <button class="property-close-modal" id="close-details-modal">&times;</button>
+        <button class="property_close-modal" id="close-details-modal">&times;</button>
       </div>
       
       <div id="property-details-content">

@@ -1,3 +1,4 @@
+<!-- rent tracker page -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,39 +10,48 @@
   <link rel="stylesheet" href="css/rent-tracker.css" />
 </head>
 <body>
- <div class="container">
+  <!-- Mobile Menu Toggle Button -->
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">
+    <span>☰</span>
+  </button>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="container">
     <!-- Sidebar Navigation -->
-    <aside>
+    <aside id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
           <img src="images/rentease.svg" alt="RentEase">
         </div>
         <div class="user-info">
-          <div class="user-name">Loading...</div>
-          <div class="user-email">Loading...</div>
+          <div class="user-name" id="user-name">Loading...</div>
+          <div class="user-email" id="user-email">Loading...</div>
+          <span class="plan-badge" id="plan-badge">Free</span>
         </div>
       </div>
 
       <div class="sidebar-nav">
         <ul>
           <li><a href="dashboard.html">
-            <span class="nav-icon">📊</span>
+            <span class="nav-icon"><img src="images/white-dash.svg" alt="Dashboard"></span>
             <span>Dashboard</span>
           </a></li>
           <li><a href="properties.html">
-            <span class="nav-icon">🏠</span>
+            <span class="nav-icon"><img src="images/white-propicon.svg" alt="Properties"></span>
             <span>Properties</span>
           </a></li>
-          <li><a href="tenants.html">
-            <span class="nav-icon">👥</span>
+          <li><a href="tenants.html" >
+            <span class="nav-icon"><img src="images/white-tennants.svg" alt="Tenants"></span>
             <span>Tenants</span>
           </a></li>
           <li><a href="rent-tracker.html" class="active">
-            <span class="nav-icon">💰</span>
+            <span class="nav-icon"><img src="images/white-renticon.svg" alt="Rent-tracker"></span>
             <span>Rent Tracker</span>
           </a></li>
           <li><a href="profile.html">
-            <span class="nav-icon">⚙️</span>
+            <span class="nav-icon"><img src="images/white-setting.svg" alt="Profile"></span>
             <span>Profile / Settings</span>
           </a></li>
         </ul>
@@ -49,7 +59,7 @@
 
       <div class="sidebar-footer">
         <button class="logout-button">
-          <span>🚪</span>
+          <span><img src="images/logout.svg" alt="logout"></span>
           <span>Logout</span>
         </button>
       </div>
@@ -182,6 +192,6 @@
     </main>
   </div>
   
-<script type="module" src="js/rent-tracker.js"></script>
+  <script type="module" src="js/rent-tracker.js"></script>
 </body>
 </html>
