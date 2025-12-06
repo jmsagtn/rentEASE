@@ -410,10 +410,16 @@ function updateLimitsDisplay() {
 
 // Update profile form with user data
 function updateProfileForm(data) {
-  const fullName = data.username || '';
-  const nameParts = fullName.split(' ');
-  const firstName = nameParts[0] || '';
-  const lastName = nameParts.slice(1).join(' ') || '';
+  // Try to get separate firstName and lastName, fall back to splitting username for backward compatibility
+  let firstName = data.firstName || '';
+  let lastName = data.lastName || '';
+  
+  // If firstName and lastName don't exist, split username (backward compatibility)
+  if (!firstName && !lastName && data.username) {
+    const nameParts = data.username.split(' ');
+    firstName = nameParts[0] || '';
+    lastName = nameParts.slice(1).join(' ') || '';
+  }
 
   // Get all forms
   const forms = document.querySelectorAll('form');
@@ -462,11 +468,17 @@ function updateNotificationSettings(data) {
 async function saveProfileChanges(e) {
   e.preventDefault();
   
-  if (!currentUser) return;
+  if (!currentUser) {
+    showNotification("User not authenticated", "error");
+    return;
+  }
 
   // Get all forms
   const forms = document.querySelectorAll('form');
-  if (forms.length === 0) return;
+  if (forms.length === 0) {
+    showNotification("Form not found", "error");
+    return;
+  }
 
   // Profile form is the first form
   const profileForm = forms[0];
@@ -487,27 +499,41 @@ async function saveProfileChanges(e) {
 
   const username = `${firstName} ${lastName}`.trim();
 
-  if (!username) {
-    showNotification("Please enter your name", "error");
+  console.log('Saving profile:', { firstName, lastName, username, phone, address });
+
+  if (!firstName && !lastName) {
+    showNotification("Please enter at least your first name", "error");
     return;
   }
 
   try {
-    await updateDoc(doc(db, "users", currentUser.uid), {
-      username: username,
+    const userRef = doc(db, "users", currentUser.uid);
+    
+    await updateDoc(userRef, {
+      firstName: firstName,
+      lastName: lastName,
+      username: username, // Keep for backward compatibility
       phone: phone,
       address: address,
       updatedAt: new Date()
     });
 
+    console.log('Profile updated in Firestore');
+
+    // Update sidebar immediately
     const sidebarName = document.querySelector('.user-name');
     if (sidebarName) sidebarName.textContent = username;
 
+    // Update userData object
+    userData = { ...userData, firstName, lastName, username, phone, address };
+
     showNotification("Profile updated successfully!", "success");
+    
+    // Reload profile to confirm changes
     await loadUserProfile(currentUser.uid);
   } catch (error) {
     console.error("Error updating profile:", error);
-    showNotification("Failed to update profile. Please try again.", "error");
+    showNotification(`Failed to update profile: ${error.message}`, "error");
   }
 }
 
@@ -607,45 +633,289 @@ async function exportUserData() {
   try {
     showNotification("Preparing your data export...", "info");
 
+    // Fetch all user data
     const propertiesQuery = query(collection(db, "properties"), where("ownerId", "==", currentUser.uid));
     const propertiesSnapshot = await getDocs(propertiesQuery);
     
     const tenantsQuery = query(collection(db, "tenants"), where("landlordId", "==", currentUser.uid));
     const tenantsSnapshot = await getDocs(tenantsQuery);
 
-    let csvContent = "data:text/csv;charset=utf-8,";
-    
-    csvContent += "PROPERTIES\n";
-    csvContent += "Name,Type,Address,City,Province,Total Units,Occupied Units,Status\n";
-    
-    propertiesSnapshot.forEach(doc => {
-      const prop = doc.data();
-      csvContent += `"${prop.name}","${prop.type}","${prop.address}","${prop.city}","${prop.province}",${prop.totalUnits},${prop.occupiedUnits},"${prop.status}"\n`;
-    });
+    const paymentsQuery = query(collection(db, "payments"), where("landlordId", "==", currentUser.uid));
+    const paymentsSnapshot = await getDocs(paymentsQuery);
 
-    csvContent += "\n\nTENANTS\n";
-    csvContent += "First Name,Last Name,Email,Phone,Unit,Monthly Rent,Security Deposit,Move In Date,Lease End Date,Status\n";
-    
-    tenantsSnapshot.forEach(doc => {
-      const tenant = doc.data();
-      const moveIn = tenant.moveInDate?.toDate ? tenant.moveInDate.toDate().toLocaleDateString() : '';
-      const leaseEnd = tenant.leaseEndDate?.toDate ? tenant.leaseEndDate.toDate().toLocaleDateString() : '';
+    // Check if there's any data to export
+    if (propertiesSnapshot.empty && tenantsSnapshot.empty && paymentsSnapshot.empty) {
+      showNotification("No data available to export", "info");
+      return;
+    }
+
+    // Load SheetJS library
+    const script = document.createElement('script');
+    script.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+    script.onload = () => generateExcelFile(propertiesSnapshot, tenantsSnapshot, paymentsSnapshot);
+    script.onerror = () => {
+      showNotification('Failed to load Excel library. Falling back to CSV...', 'info');
+      generateCSVFile(propertiesSnapshot, tenantsSnapshot, paymentsSnapshot);
+    };
+    document.head.appendChild(script);
+
+  } catch (error) {
+    console.error("Error exporting data:", error);
+    showNotification("Failed to export data. Please try again.", "error");
+  }
+}
+
+// Generate Excel file with proper formatting
+function generateExcelFile(propertiesSnapshot, tenantsSnapshot, paymentsSnapshot) {
+  try {
+    const XLSX = window.XLSX;
+    const workbook = XLSX.utils.book_new();
+
+    // Summary Sheet
+    const summaryData = [
+      ['RentEASE Data Export'],
+      ['Export Date:', new Date().toLocaleDateString()],
+      [''],
+      ['Summary'],
+      ['Properties:', propertiesSnapshot.size],
+      ['Tenants:', tenantsSnapshot.size],
+      ['Payment Records:', paymentsSnapshot.size]
+    ];
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+    // Properties Sheet
+    if (!propertiesSnapshot.empty) {
+      const propertiesData = [['Name', 'Type', 'Address', 'City', 'Province', 'Total Units', 'Occupied Units', 'Status']];
       
-      csvContent += `"${tenant.firstName}","${tenant.lastName}","${tenant.email}","${tenant.phone}","${tenant.unitNumber}",${tenant.monthlyRent},${tenant.securityDeposit},"${moveIn}","${leaseEnd}","${tenant.status}"\n`;
-    });
+      propertiesSnapshot.forEach(doc => {
+        const prop = doc.data();
+        propertiesData.push([
+          prop.name || '',
+          prop.type || '',
+          prop.address || '',
+          prop.city || '',
+          prop.province || '',
+          prop.totalUnits || 0,
+          prop.occupiedUnits || 0,
+          prop.status || ''
+        ]);
+      });
+      
+      const propertiesSheet = XLSX.utils.aoa_to_sheet(propertiesData);
+      XLSX.utils.book_append_sheet(workbook, propertiesSheet, 'Properties');
+    }
+
+    // Tenants Sheet
+    if (!tenantsSnapshot.empty) {
+      const tenantsData = [['First Name', 'Last Name', 'Email', 'Phone', 'Property', 'Unit', 'Monthly Rent', 'Security Deposit', 'Move In Date', 'Lease End Date', 'Status']];
+      
+      tenantsSnapshot.forEach(doc => {
+        const tenant = doc.data();
+        
+        let moveIn = '';
+        if (tenant.moveInDate) {
+          try {
+            moveIn = tenant.moveInDate.toDate ? tenant.moveInDate.toDate().toLocaleDateString() : new Date(tenant.moveInDate).toLocaleDateString();
+          } catch (e) {
+            moveIn = '';
+          }
+        }
+        
+        let leaseEnd = '';
+        if (tenant.leaseEndDate) {
+          try {
+            leaseEnd = tenant.leaseEndDate.toDate ? tenant.leaseEndDate.toDate().toLocaleDateString() : new Date(tenant.leaseEndDate).toLocaleDateString();
+          } catch (e) {
+            leaseEnd = '';
+          }
+        }
+        
+        tenantsData.push([
+          tenant.firstName || '',
+          tenant.lastName || '',
+          tenant.email || '',
+          tenant.phone || '',
+          tenant.propertyName || '',
+          tenant.unitNumber || '',
+          tenant.monthlyRent || 0,
+          tenant.securityDeposit || 0,
+          moveIn,
+          leaseEnd,
+          tenant.status || ''
+        ]);
+      });
+      
+      const tenantsSheet = XLSX.utils.aoa_to_sheet(tenantsData);
+      XLSX.utils.book_append_sheet(workbook, tenantsSheet, 'Tenants');
+    }
+
+    // Payments Sheet
+    if (!paymentsSnapshot.empty) {
+      const paymentsData = [['Tenant Name', 'Property ID', 'Unit', 'Amount', 'Due Date', 'Paid Date', 'Status', 'Created At']];
+      
+      paymentsSnapshot.forEach(doc => {
+        const payment = doc.data();
+        
+        let dueDate = '';
+        if (payment.dueDate) {
+          try {
+            dueDate = payment.dueDate.toDate ? payment.dueDate.toDate().toLocaleDateString() : new Date(payment.dueDate).toLocaleDateString();
+          } catch (e) {
+            dueDate = '';
+          }
+        }
+        
+        let paidDate = '';
+        if (payment.paidDate) {
+          try {
+            paidDate = payment.paidDate.toDate ? payment.paidDate.toDate().toLocaleDateString() : new Date(payment.paidDate).toLocaleDateString();
+          } catch (e) {
+            paidDate = '';
+          }
+        }
+        
+        let createdAt = '';
+        if (payment.createdAt) {
+          try {
+            createdAt = payment.createdAt.toDate ? payment.createdAt.toDate().toLocaleDateString() : new Date(payment.createdAt).toLocaleDateString();
+          } catch (e) {
+            createdAt = '';
+          }
+        }
+        
+        paymentsData.push([
+          payment.tenantName || '',
+          payment.propertyId || '',
+          payment.unitNumber || '',
+          payment.amount || 0,
+          dueDate,
+          paidDate,
+          payment.status || '',
+          createdAt
+        ]);
+      });
+      
+      const paymentsSheet = XLSX.utils.aoa_to_sheet(paymentsData);
+      XLSX.utils.book_append_sheet(workbook, paymentsSheet, 'Payment History');
+    }
+
+    // Generate and download Excel file
+    XLSX.writeFile(workbook, `rentease_complete_data_${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    showNotification(`Data exported successfully! (${propertiesSnapshot.size} properties, ${tenantsSnapshot.size} tenants, ${paymentsSnapshot.size} payments)`, "success");
+  } catch (error) {
+    console.error("Error generating Excel file:", error);
+    showNotification("Failed to generate Excel file. Please try again.", "error");
+  }
+}
+
+// Fallback CSV export with proper escaping
+function generateCSVFile(propertiesSnapshot, tenantsSnapshot, paymentsSnapshot) {
+  try {
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // Add BOM for Excel UTF-8 support
+    
+    // Add summary
+    csvContent += `"RentEASE Data Export"\n`;
+    csvContent += `"Export Date:","${new Date().toLocaleDateString()}"\n`;
+    csvContent += `"Properties:","${propertiesSnapshot.size}"\n`;
+    csvContent += `"Tenants:","${tenantsSnapshot.size}"\n`;
+    csvContent += `"Payment Records:","${paymentsSnapshot.size}"\n\n\n`;
+    
+    // Export Properties
+    if (!propertiesSnapshot.empty) {
+      csvContent += "PROPERTIES\n";
+      csvContent += "Name,Type,Address,City,Province,Total Units,Occupied Units,Status\n";
+      
+      propertiesSnapshot.forEach(doc => {
+        const prop = doc.data();
+        csvContent += `"${(prop.name || '').replace(/"/g, '""')}","${(prop.type || '').replace(/"/g, '""')}","${(prop.address || '').replace(/"/g, '""')}","${(prop.city || '').replace(/"/g, '""')}","${(prop.province || '').replace(/"/g, '""')}","${prop.totalUnits || 0}","${prop.occupiedUnits || 0}","${(prop.status || '').replace(/"/g, '""')}"\n`;
+      });
+      csvContent += "\n\n";
+    }
+
+    // Export Tenants
+    if (!tenantsSnapshot.empty) {
+      csvContent += "TENANTS\n";
+      csvContent += "First Name,Last Name,Email,Phone,Property,Unit,Monthly Rent,Security Deposit,Move In Date,Lease End Date,Status\n";
+      
+      tenantsSnapshot.forEach(doc => {
+        const tenant = doc.data();
+        
+        let moveIn = '';
+        if (tenant.moveInDate) {
+          try {
+            moveIn = tenant.moveInDate.toDate ? tenant.moveInDate.toDate().toLocaleDateString() : new Date(tenant.moveInDate).toLocaleDateString();
+          } catch (e) {
+            moveIn = '';
+          }
+        }
+        
+        let leaseEnd = '';
+        if (tenant.leaseEndDate) {
+          try {
+            leaseEnd = tenant.leaseEndDate.toDate ? tenant.leaseEndDate.toDate().toLocaleDateString() : new Date(tenant.leaseEndDate).toLocaleDateString();
+          } catch (e) {
+            leaseEnd = '';
+          }
+        }
+        
+        csvContent += `"${(tenant.firstName || '').replace(/"/g, '""')}","${(tenant.lastName || '').replace(/"/g, '""')}","${(tenant.email || '').replace(/"/g, '""')}","${(tenant.phone || '').replace(/"/g, '""')}","${(tenant.propertyName || '').replace(/"/g, '""')}","${(tenant.unitNumber || '').replace(/"/g, '""')}","${tenant.monthlyRent || 0}","${tenant.securityDeposit || 0}","${moveIn}","${leaseEnd}","${(tenant.status || '').replace(/"/g, '""')}"\n`;
+      });
+      csvContent += "\n\n";
+    }
+
+    // Export Payments
+    if (!paymentsSnapshot.empty) {
+      csvContent += "PAYMENT HISTORY\n";
+      csvContent += "Tenant Name,Property ID,Unit,Amount,Due Date,Paid Date,Status,Created At\n";
+      
+      paymentsSnapshot.forEach(doc => {
+        const payment = doc.data();
+        
+        let dueDate = '';
+        if (payment.dueDate) {
+          try {
+            dueDate = payment.dueDate.toDate ? payment.dueDate.toDate().toLocaleDateString() : new Date(payment.dueDate).toLocaleDateString();
+          } catch (e) {
+            dueDate = '';
+          }
+        }
+        
+        let paidDate = '';
+        if (payment.paidDate) {
+          try {
+            paidDate = payment.paidDate.toDate ? payment.paidDate.toDate().toLocaleDateString() : new Date(payment.paidDate).toLocaleDateString();
+          } catch (e) {
+            paidDate = '';
+          }
+        }
+        
+        let createdAt = '';
+        if (payment.createdAt) {
+          try {
+            createdAt = payment.createdAt.toDate ? payment.createdAt.toDate().toLocaleDateString() : new Date(payment.createdAt).toLocaleDateString();
+          } catch (e) {
+            createdAt = '';
+          }
+        }
+        
+        csvContent += `"${(payment.tenantName || '').replace(/"/g, '""')}","${(payment.propertyId || '').replace(/"/g, '""')}","${(payment.unitNumber || '').replace(/"/g, '""')}","${payment.amount || 0}","${dueDate}","${paidDate}","${(payment.status || '').replace(/"/g, '""')}","${createdAt}"\n`;
+      });
+    }
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `rentease_data_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `rentease_complete_data_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    showNotification("Data exported successfully!", "success");
+    showNotification(`Data exported successfully! (${propertiesSnapshot.size} properties, ${tenantsSnapshot.size} tenants, ${paymentsSnapshot.size} payments)`, "success");
   } catch (error) {
-    console.error("Error exporting data:", error);
-    showNotification("Failed to export data", "error");
+    console.error("Error generating CSV file:", error);
+    showNotification("Failed to generate CSV file. Please try again.", "error");
   }
 }
 
@@ -830,6 +1100,21 @@ document.addEventListener('DOMContentLoaded', function() {
       closePricingModal();
     }
   });
+
+  // Form submissions
+  const forms = document.querySelectorAll('form');
+  if (forms.length >= 1) {
+    forms[0].addEventListener('submit', saveProfileChanges);
+  }
+  if (forms.length >= 2) {
+    forms[1].addEventListener('submit', changePassword);
+  }
+
+  // Export data button
+  const exportBtn = document.querySelector('.settings-section .btn-secondary');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportUserData);
+  }
 });
 
 // Add CSS animations and modal styles

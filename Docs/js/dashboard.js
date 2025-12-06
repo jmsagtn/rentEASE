@@ -1,7 +1,7 @@
 // Dashboard page
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, query, where, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, query, where, orderBy, limit, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -232,9 +232,8 @@ function applyPlanRestrictions(userData) {
   if (!userLimits.features.reports) {
     const reportBtn = document.getElementById('generate-report-btn');
     if (reportBtn) {
-      reportBtn.disabled = true;
-      reportBtn.classList.add('btn-disabled');
-      reportBtn.title = 'Upgrade to Premium to unlock Advanced Reports';
+      reportBtn.classList.add('btn-locked');
+      reportBtn.title = 'Upgrade to Platinum to unlock Advanced Reports';
     }
   }
 }
@@ -1038,10 +1037,738 @@ document.getElementById('record-payment-btn').addEventListener('click', function
 });
 
 document.getElementById('generate-report-btn').addEventListener('click', function() {
-  if (!this.disabled) {
-    window.location.href = 'reports.html';
-  } else {
-    alert('🔒 Upgrade to Premium to unlock Advanced Reports!');
+  // Check if user has access to reports
+  if (!userLimits.features.reports) {
+    openPricingModal(userPlan);
+    return;
+  }
+  generateReport();
+});
+
+// Generate Report Function
+function generateReport() {
+  const reportModal = document.getElementById('reportModal');
+  if (!reportModal) {
+    console.error('Report modal not found');
+    return;
+  }
+
+  // Set report date
+  document.getElementById('reportDate').textContent = `Generated on: ${new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  })}`;
+
+  // Calculate summary stats from actual data
+  const totalProperties = chartData.properties.length;
+  const activeTenants = chartData.tenants.filter(t => t.status === 'active').length;
+  
+  // Calculate current month revenue
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const currentMonthPayments = chartData.payments.filter(p => 
+    p.month === currentMonth && p.year === currentYear
+  );
+  const monthlyRevenue = currentMonthPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  
+  // Calculate collection rate
+  const totalExpected = currentMonthPayments.length;
+  const totalCollected = currentMonthPayments.filter(p => p.status === 'paid').length;
+  const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
+  
+  // Populate summary stats
+  document.getElementById('report-properties').textContent = totalProperties;
+  document.getElementById('report-tenants').textContent = activeTenants;
+  document.getElementById('report-revenue').textContent = ` ${monthlyRevenue.toLocaleString()}`;
+  document.getElementById('report-collection').textContent = `${collectionRate}%`;
+
+  // Populate properties table
+  const propertiesTableBody = document.querySelector('#report-properties-table tbody');
+  if (propertiesTableBody) {
+    if (chartData.properties && chartData.properties.length > 0) {
+      propertiesTableBody.innerHTML = chartData.properties.map(prop => {
+        // Calculate revenue for this property
+        const propertyTenants = chartData.tenants.filter(t => 
+          t.propertyId === prop.id && t.status === 'active'
+        );
+        const propertyRevenue = propertyTenants.reduce((sum, t) => 
+          sum + (Number(t.monthlyRent) || 0), 0
+        );
+        
+        // Calculate occupancy rate
+        const totalUnits = prop.totalUnits || 0;
+        const occupiedUnits = prop.occupiedUnits || 0;
+        const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
+        
+        return `
+          <tr>
+            <td>${escapeHtml(prop.name || 'Unnamed')}</td>
+            <td>${escapeHtml(prop.address || prop.city || 'N/A')}</td>
+            <td>${totalUnits}</td>
+            <td>${occupiedUnits}</td>
+            <td>${occupancyRate}%</td>
+            <td>₱${propertyRevenue.toLocaleString()}</td>
+          </tr>
+        `;
+      }).join('');
+    } else {
+      propertiesTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #999;">No properties to display</td></tr>';
+    }
+  }
+
+  // Populate tenants table
+  const tenantsTableBody = document.querySelector('#report-tenants-table tbody');
+  if (tenantsTableBody) {
+    if (chartData.tenants && chartData.tenants.length > 0) {
+      tenantsTableBody.innerHTML = chartData.tenants.map(tenant => {
+        // Get property name
+        const property = chartData.properties.find(p => p.id === tenant.propertyId);
+        const propertyName = property ? property.name : 'N/A';
+        
+        // Format tenant name
+        const tenantName = `${tenant.firstName || ''} ${tenant.lastName || ''}`.trim() || 'Unknown';
+        
+        // Format move-in date
+        let moveInDateText = 'N/A';
+        if (tenant.moveInDate) {
+          const moveInDate = tenant.moveInDate.toDate ? tenant.moveInDate.toDate() : new Date(tenant.moveInDate);
+          moveInDateText = moveInDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+          });
+        }
+        
+        return `
+          <tr>
+            <td>${escapeHtml(tenantName)}</td>
+            <td>${escapeHtml(propertyName)}</td>
+            <td>${escapeHtml(tenant.unitNumber || 'N/A')}</td>
+            <td>₱${(Number(tenant.monthlyRent) || 0).toLocaleString()}</td>
+            <td><span class="status-badge ${tenant.status === 'active' ? 'status-active' : 'status-inactive'}">${escapeHtml(tenant.status || 'N/A')}</span></td>
+            <td>${moveInDateText}</td>
+          </tr>
+        `;
+      }).join('');
+    } else {
+      tenantsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #999;">No tenants to display</td></tr>';
+    }
+  }
+
+  // Populate payment stats
+  const paidPayments = chartData.payments.filter(p => p.status === 'paid').length;
+  const pendingPayments = chartData.payments.filter(p => p.status === 'pending').length;
+  const overduePayments = chartData.payments.filter(p => p.status === 'overdue').length;
+  const totalExpectedAmount = chartData.payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  
+  document.getElementById('report-paid').textContent = paidPayments;
+  document.getElementById('report-pending').textContent = pendingPayments;
+  document.getElementById('report-overdue').textContent = overduePayments;
+  document.getElementById('report-expected').textContent = `₱${totalExpectedAmount.toLocaleString()}`;
+
+  // Show modal
+  reportModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+// Close Report Modal
+function closeReportModal() {
+  const reportModal = document.getElementById('reportModal');
+  if (reportModal) {
+    reportModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+}
+
+// Report modal close handlers
+const closeReportModalBtn = document.getElementById('closeReportModal');
+if (closeReportModalBtn) {
+  closeReportModalBtn.addEventListener('click', closeReportModal);
+}
+
+const reportModalOverlay = document.querySelector('#reportModal .modal-overlay');
+if (reportModalOverlay) {
+  reportModalOverlay.addEventListener('click', closeReportModal);
+}
+
+// Export PDF function
+document.getElementById('exportPdfBtn')?.addEventListener('click', async function() {
+  try {
+    // Load jsPDF and autoTable if not already loaded
+    if (typeof window.jspdf === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      document.head.appendChild(script);
+      await new Promise(resolve => script.onload = resolve);
+    }
+
+    // Load jsPDF autoTable plugin for tables
+    if (typeof window.jspdf.jsPDF.prototype.autoTable === 'undefined') {
+      const autoTableScript = document.createElement('script');
+      autoTableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js';
+      document.head.appendChild(autoTableScript);
+      await new Promise(resolve => autoTableScript.onload = resolve);
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    let yPos = 20;
+    
+    // Header
+    doc.setFillColor(26, 33, 49); // Dark blue
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont(undefined, 'bold');
+    doc.text('RentEase Business Report', 20, 25);
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 20, 33);
+    
+    yPos = 50;
+    doc.setTextColor(0, 0, 0);
+    
+    // Executive Summary Section
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(47, 196, 178);
+    doc.text('Executive Summary', 20, yPos);
+    yPos += 10;
+    
+    // Summary stats in boxes
+    const totalProperties = chartData.properties.length;
+    const activeTenants = chartData.tenants.filter(t => t.status === 'active').length;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const currentMonthPayments = chartData.payments.filter(p => 
+      p.month === currentMonth && p.year === currentYear
+    );
+    const monthlyRevenue = currentMonthPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+    const totalExpected = currentMonthPayments.length;
+    const totalCollected = currentMonthPayments.filter(p => p.status === 'paid').length;
+    const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    
+    // Draw stat boxes
+    const statBoxes = [
+      { label: 'Total Properties', value: totalProperties, x: 20 },
+      { label: 'Active Tenants', value: activeTenants, x: 65 },
+      { label: 'Monthly Revenue', value: `P${monthlyRevenue.toLocaleString()}`, x: 110 },
+      { label: 'Collection Rate', value: `${collectionRate}%`, x: 155 }
+    ];
+    
+    statBoxes.forEach(stat => {
+      doc.setDrawColor(229, 231, 235);
+      doc.setFillColor(248, 249, 250);
+      doc.roundedRect(stat.x, yPos, 40, 20, 2, 2, 'FD');
+      doc.setFontSize(8);
+      doc.setTextColor(107, 114, 128);
+      doc.text(stat.label, stat.x + 20, yPos + 6, { align: 'center' });
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(26, 33, 49);
+      doc.text(String(stat.value), stat.x + 20, yPos + 15, { align: 'center' });
+      doc.setFont(undefined, 'normal');
+    });
+    
+    yPos += 30;
+    
+    // Properties Overview Section
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(47, 196, 178);
+    doc.text('Properties Overview', 20, yPos);
+    yPos += 5;
+    
+    if (chartData.properties && chartData.properties.length > 0) {
+      const propertiesData = chartData.properties.map(prop => {
+        const propertyTenants = chartData.tenants.filter(t => 
+          t.propertyId === prop.id && t.status === 'active'
+        );
+        const propertyRevenue = propertyTenants.reduce((sum, t) => 
+          sum + (Number(t.monthlyRent) || 0), 0
+        );
+        const totalUnits = prop.totalUnits || 0;
+        const occupiedUnits = prop.occupiedUnits || 0;
+        const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
+        
+        return [
+          prop.name || 'Unnamed',
+          prop.address || '',
+          prop.city || '',
+          prop.province || '',
+          prop.type || '',
+          totalUnits,
+          occupiedUnits,
+          `${occupancyRate}%`,
+          `P${propertyRevenue.toLocaleString()}`,
+          prop.status || 'Active'
+        ];
+      });
+      
+      doc.autoTable({
+        startY: yPos,
+        head: [['Property', 'Address', 'City', 'Province', 'Type', 'Units', 'Occupied', 'Rate', 'Revenue', 'Status']],
+        body: propertiesData,
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [47, 196, 178], 
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 8,
+          halign: 'center'
+        },
+        bodyStyles: { 
+          fontSize: 7,
+          cellPadding: 2
+        },
+        columnStyles: {
+          0: { cellWidth: 24, halign: 'left' },
+          1: { cellWidth: 28, halign: 'left' },
+          2: { cellWidth: 18, halign: 'left' },
+          3: { cellWidth: 18, halign: 'left' },
+          4: { cellWidth: 16, halign: 'left' },
+          5: { cellWidth: 12, halign: 'center' },
+          6: { cellWidth: 14, halign: 'center' },
+          7: { cellWidth: 12, halign: 'center' },
+          8: { cellWidth: 20, halign: 'right' },
+          9: { cellWidth: 16, halign: 'center' }
+        },
+        margin: { left: 10, right: 10 }
+      });
+      
+      yPos = doc.lastAutoTable.finalY + 15;
+    } else {
+      doc.setFontSize(10);
+      doc.setTextColor(153, 153, 153);
+      doc.text('No properties to display', 20, yPos + 5);
+      yPos += 15;
+    }
+    
+    // Check if we need a new page
+    if (yPos > 240) {
+      doc.addPage();
+      yPos = 20;
+    }
+    
+    // Tenants Summary Section
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(47, 196, 178);
+    doc.text('Tenants Summary', 20, yPos);
+    yPos += 5;
+    
+    if (chartData.tenants && chartData.tenants.length > 0) {
+      const tenantsData = chartData.tenants.map(tenant => {
+        const property = chartData.properties.find(p => p.id === tenant.propertyId);
+        const propertyName = property ? property.name : 'N/A';
+        
+        let moveInDateText = '';
+        if (tenant.moveInDate) {
+          try {
+            const moveInDate = tenant.moveInDate.toDate ? tenant.moveInDate.toDate() : new Date(tenant.moveInDate);
+            moveInDateText = moveInDate.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+            });
+          } catch (e) {
+            moveInDateText = '';
+          }
+        }
+        
+        let leaseEndDateText = '';
+        if (tenant.leaseEndDate) {
+          try {
+            const leaseEndDate = tenant.leaseEndDate.toDate ? tenant.leaseEndDate.toDate() : new Date(tenant.leaseEndDate);
+            leaseEndDateText = leaseEndDate.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+            });
+          } catch (e) {
+            leaseEndDateText = '';
+          }
+        }
+        
+        return [
+          tenant.firstName || '',
+          tenant.lastName || '',
+          tenant.email || '',
+          tenant.phone || '',
+          propertyName,
+          tenant.unitNumber || '',
+          `P${(Number(tenant.monthlyRent) || 0).toLocaleString()}`,
+          `P${(Number(tenant.securityDeposit) || 0).toLocaleString()}`,
+          moveInDateText,
+          leaseEndDateText,
+          tenant.status || ''
+        ];
+      });
+      
+      doc.autoTable({
+        startY: yPos,
+        head: [['First Name', 'Last Name', 'Email', 'Phone', 'Property', 'Unit', 'Rent', 'Deposit', 'Move In', 'Lease End', 'Status']],
+        body: tenantsData,
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [47, 196, 178], 
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 7,
+          halign: 'center'
+        },
+        bodyStyles: { 
+          fontSize: 6.5,
+          cellPadding: 1.5
+        },
+        columnStyles: {
+          0: { cellWidth: 18, halign: 'left' },
+          1: { cellWidth: 18, halign: 'left' },
+          2: { cellWidth: 24, halign: 'left' },
+          3: { cellWidth: 18, halign: 'left' },
+          4: { cellWidth: 20, halign: 'left' },
+          5: { cellWidth: 12, halign: 'center' },
+          6: { cellWidth: 16, halign: 'right' },
+          7: { cellWidth: 16, halign: 'right' },
+          8: { cellWidth: 18, halign: 'left' },
+          9: { cellWidth: 18, halign: 'left' },
+          10: { cellWidth: 14, halign: 'center' }
+        },
+        margin: { left: 8, right: 8 }
+      });
+      
+      yPos = doc.lastAutoTable.finalY + 15;
+    } else {
+      doc.setFontSize(10);
+      doc.setTextColor(153, 153, 153);
+      doc.text('No tenants to display', 20, yPos + 5);
+      yPos += 15;
+    }
+    
+    // Check if we need a new page
+    if (yPos > 240) {
+      doc.addPage();
+      yPos = 20;
+    }
+    
+    // Payment Status Section
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(47, 196, 178);
+    doc.text('Payment History', 20, yPos);
+    yPos += 10;
+    
+    const paidPayments = chartData.payments.filter(p => p.status === 'paid').length;
+    const pendingPayments = chartData.payments.filter(p => p.status === 'pending').length;
+    const overduePayments = chartData.payments.filter(p => p.status === 'overdue').length;
+    const totalExpectedAmount = chartData.payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+    
+    const paymentStats = [
+      { label: 'Paid Payments', value: paidPayments, x: 20 },
+      { label: 'Pending Payments', value: pendingPayments, x: 65 },
+      { label: 'Overdue Payments', value: overduePayments, x: 110 },
+      { label: 'Total Expected', value: `P${totalExpectedAmount.toLocaleString()}`, x: 155 }
+    ];
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    
+    paymentStats.forEach(stat => {
+      doc.setDrawColor(229, 231, 235);
+      doc.setFillColor(248, 249, 250);
+      doc.roundedRect(stat.x, yPos, 40, 20, 2, 2, 'FD');
+      doc.setFontSize(8);
+      doc.setTextColor(107, 114, 128);
+      doc.text(stat.label, stat.x + 20, yPos + 6, { align: 'center' });
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(26, 33, 49);
+      doc.text(String(stat.value), stat.x + 20, yPos + 15, { align: 'center' });
+      doc.setFont(undefined, 'normal');
+    });
+    
+    yPos += 30;
+    
+    // Add detailed payment history table
+    if (chartData.payments && chartData.payments.length > 0) {
+      // Check if we need a new page
+      if (yPos > 220) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      const paymentsData = chartData.payments.map(payment => {
+        let dueDate = '';
+        if (payment.dueDate) {
+          try {
+            dueDate = payment.dueDate.toLocaleDateString ? payment.dueDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : new Date(payment.dueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          } catch (e) {
+            dueDate = '';
+          }
+        }
+        
+        let paidDate = '';
+        if (payment.paidDate) {
+          try {
+            paidDate = payment.paidDate.toDate ? payment.paidDate.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : new Date(payment.paidDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          } catch (e) {
+            paidDate = '';
+          }
+        }
+        
+        return [
+          payment.tenantName || '',
+          payment.propertyId || '',
+          payment.unitNumber || '',
+          `P${(Number(payment.amount) || 0).toLocaleString()}`,
+          dueDate,
+          paidDate,
+          payment.status || '',
+          (payment.month + 1) || '',
+          payment.year || ''
+        ];
+      });
+      
+      doc.autoTable({
+        startY: yPos,
+        head: [['Tenant', 'Property ID', 'Unit', 'Amount', 'Due Date', 'Paid Date', 'Status', 'Month', 'Year']],
+        body: paymentsData,
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [47, 196, 178], 
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 7,
+          halign: 'center'
+        },
+        bodyStyles: { 
+          fontSize: 6.5,
+          cellPadding: 1.5
+        },
+        columnStyles: {
+          0: { cellWidth: 22, halign: 'left' },
+          1: { cellWidth: 22, halign: 'left' },
+          2: { cellWidth: 12, halign: 'center' },
+          3: { cellWidth: 18, halign: 'right' },
+          4: { cellWidth: 20, halign: 'left' },
+          5: { cellWidth: 20, halign: 'left' },
+          6: { cellWidth: 16, halign: 'center' },
+          7: { cellWidth: 12, halign: 'center' },
+          8: { cellWidth: 12, halign: 'center' }
+        },
+        margin: { left: 10, right: 10 }
+      });
+    }
+    
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(107, 114, 128);
+      doc.text(`Page ${i} of ${pageCount}`, 105, 287, { align: 'center' });
+      doc.text('Generated by RentEase', 20, 287);
+    }
+    
+    doc.save('rentease-report.pdf');
+    alert('✅ PDF report generated successfully!');
+  } catch (error) {
+    console.error('PDF export error:', error);
+    alert('Failed to export PDF. Please try again.');
+  }
+});
+
+// Export Excel function
+document.getElementById('exportExcelBtn')?.addEventListener('click', async function() {
+  try {
+    // Load SheetJS library if not already loaded
+    if (typeof window.XLSX === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+      document.head.appendChild(script);
+      await new Promise(resolve => script.onload = resolve);
+    }
+
+    const XLSX = window.XLSX;
+    
+    if (!XLSX) {
+      throw new Error('XLSX library failed to load');
+    }
+    const workbook = XLSX.utils.book_new();
+
+    // Calculate summary data
+    const totalProperties = chartData.properties.length;
+    const activeTenants = chartData.tenants.filter(t => t.status === 'active').length;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const currentMonthPayments = chartData.payments.filter(p => 
+      p.month === currentMonth && p.year === currentYear
+    );
+    const monthlyRevenue = currentMonthPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+    const totalExpected = currentMonthPayments.length;
+    const totalCollected = currentMonthPayments.filter(p => p.status === 'paid').length;
+    const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
+    const paidPayments = chartData.payments.filter(p => p.status === 'paid').length;
+    const pendingPayments = chartData.payments.filter(p => p.status === 'pending').length;
+    const overduePayments = chartData.payments.filter(p => p.status === 'overdue').length;
+
+    // Summary Sheet
+    const summaryData = [
+      ['RentEase Business Report'],
+      ['Export Date:', new Date().toLocaleDateString()],
+      [''],
+      ['Executive Summary'],
+      ['Total Properties:', totalProperties],
+      ['Active Tenants:', activeTenants],
+      ['Monthly Revenue:', monthlyRevenue],
+      ['Collection Rate:', `${collectionRate}%`],
+      [''],
+      ['Payment Overview'],
+      ['Paid Payments:', paidPayments],
+      ['Pending Payments:', pendingPayments],
+      ['Overdue Payments:', overduePayments]
+    ];
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+    // Properties Sheet
+    if (chartData.properties && chartData.properties.length > 0) {
+      const propertiesData = [
+        ['Property Name', 'Address', 'City', 'Province', 'Type', 'Total Units', 'Occupied Units', 'Occupancy Rate (%)', 'Monthly Revenue', 'Status']
+      ];
+      
+      chartData.properties.forEach(prop => {
+        const propertyTenants = chartData.tenants.filter(t => 
+          t.propertyId === prop.id && t.status === 'active'
+        );
+        const propertyRevenue = propertyTenants.reduce((sum, t) => 
+          sum + (Number(t.monthlyRent) || 0), 0
+        );
+        const totalUnits = prop.totalUnits || 0;
+        const occupiedUnits = prop.occupiedUnits || 0;
+        const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
+        
+        propertiesData.push([
+          prop.name || 'Unnamed',
+          prop.address || '',
+          prop.city || '',
+          prop.province || '',
+          prop.type || '',
+          totalUnits,
+          occupiedUnits,
+          occupancyRate,
+          propertyRevenue,
+          prop.status || 'Active'
+        ]);
+      });
+      
+      const propertiesSheet = XLSX.utils.aoa_to_sheet(propertiesData);
+      XLSX.utils.book_append_sheet(workbook, propertiesSheet, 'Properties');
+    }
+
+    // Tenants Sheet
+    if (chartData.tenants && chartData.tenants.length > 0) {
+      const tenantsData = [
+        ['First Name', 'Last Name', 'Email', 'Phone', 'Property', 'Unit Number', 'Monthly Rent', 'Security Deposit', 'Move In Date', 'Lease End Date', 'Status']
+      ];
+      
+      chartData.tenants.forEach(tenant => {
+        const property = chartData.properties.find(p => p.id === tenant.propertyId);
+        const propertyName = property ? property.name : 'N/A';
+        
+        let moveInDate = '';
+        if (tenant.moveInDate) {
+          try {
+            moveInDate = tenant.moveInDate.toDate ? tenant.moveInDate.toDate().toLocaleDateString() : new Date(tenant.moveInDate).toLocaleDateString();
+          } catch (e) {
+            moveInDate = '';
+          }
+        }
+        
+        let leaseEndDate = '';
+        if (tenant.leaseEndDate) {
+          try {
+            leaseEndDate = tenant.leaseEndDate.toDate ? tenant.leaseEndDate.toDate().toLocaleDateString() : new Date(tenant.leaseEndDate).toLocaleDateString();
+          } catch (e) {
+            leaseEndDate = '';
+          }
+        }
+        
+        tenantsData.push([
+          tenant.firstName || '',
+          tenant.lastName || '',
+          tenant.email || '',
+          tenant.phone || '',
+          propertyName,
+          tenant.unitNumber || '',
+          Number(tenant.monthlyRent) || 0,
+          Number(tenant.securityDeposit) || 0,
+          moveInDate,
+          leaseEndDate,
+          tenant.status || ''
+        ]);
+      });
+      
+      const tenantsSheet = XLSX.utils.aoa_to_sheet(tenantsData);
+      XLSX.utils.book_append_sheet(workbook, tenantsSheet, 'Tenants');
+    }
+
+    // Payments Sheet
+    if (chartData.payments && chartData.payments.length > 0) {
+      const paymentsData = [
+        ['Tenant Name', 'Property ID', 'Unit Number', 'Amount', 'Due Date', 'Paid Date', 'Status', 'Month', 'Year']
+      ];
+      
+      chartData.payments.forEach(payment => {
+        let dueDate = '';
+        if (payment.dueDate) {
+          try {
+            dueDate = payment.dueDate.toLocaleDateString ? payment.dueDate.toLocaleDateString() : new Date(payment.dueDate).toLocaleDateString();
+          } catch (e) {
+            dueDate = '';
+          }
+        }
+        
+        let paidDate = '';
+        if (payment.paidDate) {
+          try {
+            paidDate = payment.paidDate.toDate ? payment.paidDate.toDate().toLocaleDateString() : new Date(payment.paidDate).toLocaleDateString();
+          } catch (e) {
+            paidDate = '';
+          }
+        }
+        
+        paymentsData.push([
+          payment.tenantName || '',
+          payment.propertyId || '',
+          payment.unitNumber || '',
+          Number(payment.amount) || 0,
+          dueDate,
+          paidDate,
+          payment.status || '',
+          payment.month + 1 || '', // Add 1 to convert 0-11 to 1-12
+          payment.year || ''
+        ]);
+      });
+      
+      const paymentsSheet = XLSX.utils.aoa_to_sheet(paymentsData);
+      XLSX.utils.book_append_sheet(workbook, paymentsSheet, 'Payment History');
+    }
+
+    // Generate and download Excel file
+    XLSX.writeFile(workbook, `rentease_business_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    alert(`✅ Excel report exported successfully!\n\n${totalProperties} properties, ${activeTenants} tenants, ${chartData.payments.length} payment records`);
+  } catch (error) {
+    console.error('Excel export error:', error);
+    alert('Failed to export Excel. Please try again.');
   }
 });
 
@@ -1294,6 +2021,372 @@ function closePaymentsModal() {
     document.body.style.overflow = '';
   }
 }
+
+// Activity Modal Functions
+let allActivities = [];
+let filteredActivities = [];
+
+// View All Activities button
+document.getElementById('viewAllActivities')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  openActivityModal();
+});
+
+async function openActivityModal() {
+  const activityModal = document.getElementById('activityModal');
+  if (!activityModal || !currentUser) return;
+
+  try {
+    // Load all activities from Firestore
+    const activitiesQuery = query(
+      collection(db, "activities"),
+      where("userId", "==", currentUser.uid),
+      orderBy("timestamp", "desc")
+    );
+    
+    const snapshot = await getDocs(activitiesQuery);
+    allActivities = [];
+    
+    snapshot.forEach((doc) => {
+      const activity = doc.data();
+      allActivities.push({
+        id: doc.id,
+        ...activity,
+        timestamp: activity.timestamp?.toDate ? activity.timestamp.toDate() : new Date()
+      });
+    });
+
+    // Initialize filtered activities with all activities
+    filteredActivities = [...allActivities];
+    
+    // Reset filter to "all"
+    const filterSelect = document.getElementById('activity-filter-select');
+    if (filterSelect) filterSelect.value = 'all';
+    
+    // Update display
+    updateActivityDisplay();
+
+    // Show modal
+    activityModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  } catch (error) {
+    console.error('Error loading activities:', error);
+    alert('Failed to load activities. Please try again.');
+  }
+}
+
+function updateActivityDisplay() {
+  // Update stats
+  document.getElementById('total-activities').textContent = filteredActivities.length;
+  
+  if (filteredActivities.length > 0) {
+    const oldestDate = filteredActivities[filteredActivities.length - 1].timestamp;
+    const newestDate = filteredActivities[0].timestamp;
+    const dateRange = `${oldestDate.toLocaleDateString()} - ${newestDate.toLocaleDateString()}`;
+    document.getElementById('activity-date-range').textContent = dateRange;
+  } else {
+    document.getElementById('activity-date-range').textContent = 'No activities';
+  }
+
+  // Populate activity list
+  const activityLogsList = document.getElementById('activity-logs-list');
+  if (filteredActivities.length === 0) {
+    activityLogsList.innerHTML = `
+      <li class="activity-item" style="text-align: center; padding: 40px;">
+        <div style="font-size: 48px; margin-bottom: 12px;">📝</div>
+        <div class="activity-title">No activities found</div>
+        <div class="activity-details">Try changing your filter settings</div>
+      </li>
+    `;
+  } else {
+    activityLogsList.innerHTML = filteredActivities.map(activity => `
+      <li class="activity-item">
+        <div class="activity-icon">${activity.icon || '📝'}</div>
+        <div class="activity-content">
+          <div class="activity-title">${escapeHtml(activity.title || 'Activity')}</div>
+          <div class="activity-details">${escapeHtml(activity.details || '')}</div>
+          <div class="activity-time">${getTimeAgo(activity.timestamp)}</div>
+        </li>
+      `).join('');
+  }
+}
+
+function filterActivitiesByDateRange(startDate, endDate) {
+  filteredActivities = allActivities.filter(activity => {
+    const activityDate = activity.timestamp;
+    return activityDate >= startDate && activityDate <= endDate;
+  });
+  updateActivityDisplay();
+}
+
+// Activity filter change handler
+document.getElementById('activity-filter-select')?.addEventListener('change', function(e) {
+  const filterValue = e.target.value;
+  const customDateRange = document.getElementById('custom-date-range');
+  
+  if (filterValue === 'custom') {
+    customDateRange.style.display = 'flex';
+    return;
+  } else {
+    customDateRange.style.display = 'none';
+  }
+  
+  const now = new Date();
+  let startDate, endDate;
+  
+  switch(filterValue) {
+    case 'all':
+      filteredActivities = [...allActivities];
+      break;
+      
+    case 'today':
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      filterActivitiesByDateRange(startDate, endDate);
+      break;
+      
+    case 'week':
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 7);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(now);
+      endDate.setHours(23, 59, 59);
+      filterActivitiesByDateRange(startDate, endDate);
+      break;
+      
+    case 'month':
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+      filterActivitiesByDateRange(startDate, endDate);
+      break;
+      
+    case 'year':
+      startDate = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
+      endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+      filterActivitiesByDateRange(startDate, endDate);
+      break;
+  }
+});
+
+// Apply custom date filter
+document.getElementById('apply-date-filter')?.addEventListener('click', function() {
+  const startDateInput = document.getElementById('start-date').value;
+  const endDateInput = document.getElementById('end-date').value;
+  
+  if (!startDateInput || !endDateInput) {
+    alert('Please select both start and end dates');
+    return;
+  }
+  
+  const startDate = new Date(startDateInput);
+  startDate.setHours(0, 0, 0, 0);
+  
+  const endDate = new Date(endDateInput);
+  endDate.setHours(23, 59, 59, 999);
+  
+  if (startDate > endDate) {
+    alert('Start date must be before end date');
+    return;
+  }
+  
+  filterActivitiesByDateRange(startDate, endDate);
+});
+
+function closeActivityModal() {
+  const activityModal = document.getElementById('activityModal');
+  if (activityModal) {
+    activityModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+}
+
+// Close activity modal handlers
+document.getElementById('closeActivityModal')?.addEventListener('click', closeActivityModal);
+
+document.querySelector('#activityModal .modal-overlay')?.addEventListener('click', closeActivityModal);
+
+// Export Activity PDF
+document.getElementById('exportActivityPdfBtn')?.addEventListener('click', async function() {
+  try {
+    // Load jsPDF if not already loaded
+    if (typeof window.jspdf === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      document.head.appendChild(script);
+      await new Promise(resolve => script.onload = resolve);
+    }
+
+    // Load jsPDF autoTable plugin
+    if (typeof window.jspdf.jsPDF.prototype.autoTable === 'undefined') {
+      const autoTableScript = document.createElement('script');
+      autoTableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js';
+      document.head.appendChild(autoTableScript);
+      await new Promise(resolve => autoTableScript.onload = resolve);
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    let yPos = 20;
+    
+    // Header
+    doc.setFillColor(26, 33, 49);
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont(undefined, 'bold');
+    doc.text('RentEase Activity Logs', 20, 25);
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 20, 33);
+    
+    yPos = 50;
+    doc.setTextColor(0, 0, 0);
+    
+    // Summary
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(47, 196, 178);
+    doc.text('Activity Summary', 20, yPos);
+    yPos += 10;
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Total Activities: ${filteredActivities.length}`, 20, yPos);
+    yPos += 7;
+    
+    if (filteredActivities.length > 0) {
+      const oldestDate = filteredActivities[filteredActivities.length - 1].timestamp;
+      const newestDate = filteredActivities[0].timestamp;
+      doc.text(`Date Range: ${oldestDate.toLocaleDateString()} - ${newestDate.toLocaleDateString()}`, 20, yPos);
+      yPos += 15;
+    } else {
+      yPos += 10;
+    }
+    
+    // Activities Table
+    if (filteredActivities.length > 0) {
+      const activitiesData = filteredActivities.map(activity => [
+        activity.timestamp.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        activity.title || 'Activity',
+        activity.details || '',
+        activity.icon || '📝'
+      ]);
+      
+      doc.autoTable({
+        startY: yPos,
+        head: [['Date & Time', 'Title', 'Details', 'Type']],
+        body: activitiesData,
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [47, 196, 178], 
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 10,
+          halign: 'center'
+        },
+        bodyStyles: { 
+          fontSize: 9,
+          cellPadding: 3
+        },
+        columnStyles: {
+          0: { cellWidth: 42, halign: 'left' },
+          1: { cellWidth: 50, halign: 'left' },
+          2: { cellWidth: 80, halign: 'left' },
+          3: { cellWidth: 18, halign: 'center' }
+        },
+        margin: { left: 10, right: 10 }
+      });
+    } else {
+      doc.setFontSize(10);
+      doc.setTextColor(153, 153, 153);
+      doc.text('No activities to display', 20, yPos);
+    }
+    
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(107, 114, 128);
+      doc.text(`Page ${i} of ${pageCount}`, 105, 287, { align: 'center' });
+      doc.text('Generated by RentEase', 20, 287);
+    }
+    
+    doc.save(`rentease_activity_logs_${new Date().toISOString().split('T')[0]}.pdf`);
+    alert(`✅ Activity logs PDF exported successfully!\n\n${filteredActivities.length} activities exported`);
+  } catch (error) {
+    console.error('PDF export error:', error);
+    alert('Failed to export PDF. Please try again.');
+  }
+});
+
+// Export Activity Excel
+document.getElementById('exportActivityExcelBtn')?.addEventListener('click', async function() {
+  try {
+    // Load SheetJS library if not already loaded
+    if (typeof window.XLSX === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+      document.head.appendChild(script);
+      await new Promise(resolve => script.onload = resolve);
+    }
+
+    const XLSX = window.XLSX;
+    
+    if (!XLSX) {
+      throw new Error('XLSX library failed to load');
+    }
+    
+    const workbook = XLSX.utils.book_new();
+
+    // Summary Sheet
+    const summaryData = [
+      ['RentEase Activity Logs'],
+      ['Export Date:', new Date().toLocaleDateString()],
+      [''],
+      ['Summary'],
+      ['Total Activities:', filteredActivities.length]
+    ];
+    
+    if (filteredActivities.length > 0) {
+      const oldestDate = filteredActivities[filteredActivities.length - 1].timestamp;
+      const newestDate = filteredActivities[0].timestamp;
+      summaryData.push(['Date Range:', `${oldestDate.toLocaleDateString()} - ${newestDate.toLocaleDateString()}`]);
+    }
+    
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+    // Activities Sheet
+    if (filteredActivities.length > 0) {
+      const activitiesData = [
+        ['Date & Time', 'Title', 'Details', 'Type']
+      ];
+      
+      filteredActivities.forEach(activity => {
+        activitiesData.push([
+          activity.timestamp.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+          activity.title || 'Activity',
+          activity.details || '',
+          activity.icon || '📝'
+        ]);
+      });
+      
+      const activitiesSheet = XLSX.utils.aoa_to_sheet(activitiesData);
+      XLSX.utils.book_append_sheet(workbook, activitiesSheet, 'Activity Logs');
+    }
+
+    // Generate and download Excel file
+    XLSX.writeFile(workbook, `rentease_activity_logs_${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    alert(`✅ Activity logs Excel exported successfully!\n\n${filteredActivities.length} activities exported`);
+  } catch (error) {
+    console.error('Excel export error:', error);
+    alert('Failed to export Excel. Please try again.');
+  }
+});
 
 function loadModalPayments(payments) {
   const list = document.getElementById('paymentsModalList');

@@ -161,7 +161,7 @@
         <div class="card">
           <div class="card-header">
             <h2 class="card-title">Recent Activity</h2>
-            <a href="#" class="card-action">View All →</a>
+            <a href="#" class="card-action" id="viewAllActivities">View All →</a>
           </div>
           <ul class="activity-list" id="activity-list">
             <li class="activity-item">
@@ -337,6 +337,192 @@
 
       <div class="payments-modal-list" id="paymentsModalList">
         <!-- Payments will be dynamically inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Modal -->
+  <div id="reportModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content report-modal-content">
+      <button class="modal-close" id="closeReportModal">&times;</button>
+      
+      <div class="modal-header">
+        <h2>📊 Business Report</h2>
+        <p id="reportDate">Generated on: December 7, 2025</p>
+      </div>
+
+      <div class="report-content" id="reportContent">
+        <!-- Summary Section -->
+        <div class="report-section">
+          <h3 class="report-section-title">📈 Executive Summary</h3>
+          <div class="report-stats-grid">
+            <div class="report-stat">
+              <div class="report-stat-label">Total Properties</div>
+              <div class="report-stat-value" id="report-properties">0</div>
+            </div>
+            <div class="report-stat">
+              <div class="report-stat-label">Active Tenants</div>
+              <div class="report-stat-value" id="report-tenants">0</div>
+            </div>
+            <div class="report-stat">
+              <div class="report-stat-label">Monthly Revenue</div>
+              <div class="report-stat-value" id="report-revenue">₱0</div>
+            </div>
+            <div class="report-stat">
+              <div class="report-stat-label">Collection Rate</div>
+              <div class="report-stat-value" id="report-collection">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Properties Details -->
+        <div class="report-section">
+          <h3 class="report-section-title">🏠 Properties Overview</h3>
+          <div class="report-table-container">
+            <table class="report-table" id="report-properties-table">
+              <thead>
+                <tr>
+                  <th>Property Name</th>
+                  <th>Location</th>
+                  <th>Total Units</th>
+                  <th>Occupied</th>
+                  <th>Occupancy Rate</th>
+                  <th>Monthly Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 40px; color: #999;">No properties to display</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tenants Summary -->
+        <div class="report-section">
+          <h3 class="report-section-title">👥 Tenants Summary</h3>
+          <div class="report-table-container">
+            <table class="report-table" id="report-tenants-table">
+              <thead>
+                <tr>
+                  <th>Tenant Name</th>
+                  <th>Property</th>
+                  <th>Unit</th>
+                  <th>Monthly Rent</th>
+                  <th>Status</th>
+                  <th>Move In Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 40px; color: #999;">No tenants to display</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Payment Status -->
+        <div class="report-section">
+          <h3 class="report-section-title">💰 Payment Status</h3>
+          <div class="report-stats-grid">
+            <div class="report-stat">
+              <div class="report-stat-label">Paid Payments</div>
+              <div class="report-stat-value" id="report-paid">0</div>
+            </div>
+            <div class="report-stat">
+              <div class="report-stat-label">Pending Payments</div>
+              <div class="report-stat-value" id="report-pending">0</div>
+            </div>
+            <div class="report-stat">
+              <div class="report-stat-label">Overdue Payments</div>
+              <div class="report-stat-value" id="report-overdue">0</div>
+            </div>
+            <div class="report-stat">
+              <div class="report-stat-label">Total Expected</div>
+              <div class="report-stat-value" id="report-expected">₱0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-actions">
+        <button class="btn btn-primary" id="exportPdfBtn">
+          <span>📄</span>
+          <span>Export as PDF</span>
+        </button>
+        <button class="btn btn-secondary" id="exportExcelBtn">
+          <span>📊</span>
+          <span>Export as Excel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Logs Modal -->
+  <div class="modal" id="activityModal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content activity-modal-content">
+      <div class="modal-header">
+        <h2>Activity Logs</h2>
+        <button class="modal-close" id="closeActivityModal">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="activity-stats">
+          <div class="activity-stat-item">
+            <div class="activity-stat-label">Total Activities</div>
+            <div class="activity-stat-value" id="total-activities">0</div>
+          </div>
+          <div class="activity-stat-item">
+            <div class="activity-stat-label">Date Range</div>
+            <div class="activity-stat-value" id="activity-date-range">-</div>
+          </div>
+        </div>
+
+        <div class="activity-filter">
+          <label for="activity-filter-select">Filter by:</label>
+          <select id="activity-filter-select" class="activity-filter-select">
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+            <option value="custom">Custom Date Range</option>
+          </select>
+          <div id="custom-date-range" class="custom-date-range" style="display: none;">
+            <input type="date" id="start-date" class="date-input" />
+            <span>to</span>
+            <input type="date" id="end-date" class="date-input" />
+            <button class="btn-apply-filter" id="apply-date-filter">Apply</button>
+          </div>
+        </div>
+
+        <div class="activity-logs-container">
+          <ul class="activity-logs-list" id="activity-logs-list">
+            <li class="activity-item">
+              <div class="activity-icon">📝</div>
+              <div class="activity-content">
+                <div class="activity-title">Loading activities...</div>
+                <div class="activity-details">Please wait</div>
+                <div class="activity-time">-</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="exportActivityPdfBtn">
+          <span>📄</span>
+          <span>Export as PDF</span>
+        </button>
+        <button class="btn btn-secondary" id="exportActivityExcelBtn">
+          <span>📊</span>
+          <span>Export as Excel</span>
+        </button>
       </div>
     </div>
   </div>
