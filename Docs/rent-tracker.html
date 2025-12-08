@@ -1,3 +1,4 @@
+<!-- rent tracker page -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,16 +10,25 @@
   <link rel="stylesheet" href="css/rent-tracker.css" />
 </head>
 <body>
- <div class="container">
+  <!-- Mobile Menu Toggle Button -->
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">
+    <span>☰</span>
+  </button>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="container">
     <!-- Sidebar Navigation -->
-    <aside>
+    <aside id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
           <img src="images/rentease.svg" alt="RentEase">
         </div>
         <div class="user-info">
-          <div class="user-name">Loading...</div>
-          <div class="user-email">Loading...</div>
+          <div class="user-name" id="user-name">Loading...</div>
+          <div class="user-email" id="user-email">Loading...</div>
+          <span class="plan-badge" id="plan-badge">Free</span>
         </div>
       </div>
 
@@ -182,6 +192,6 @@
     </main>
   </div>
   
-<script type="module" src="js/rent-tracker.js"></script>
+  <script type="module" src="js/rent-tracker.js"></script>
 </body>
 </html>
