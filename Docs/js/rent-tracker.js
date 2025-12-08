@@ -1208,11 +1208,37 @@ function generatePDF() {
 // ==================== EVENT LISTENERS ====================
 
 function setupEventListeners() {
-  DOM.logoutBtn.addEventListener('click', async () => {
-    showConfirmModal('Confirm Logout', 'Are you sure you want to logout?', async () => {
-      cleanup(); await signOut(auth); window.location.href = 'index.html';
+  // Logout Modal functionality
+  const logoutModal = document.getElementById('logoutModal');
+  const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+  const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+
+  if (DOM.logoutBtn && logoutModal) {
+    DOM.logoutBtn.addEventListener('click', () => {
+      logoutModal.classList.add('active');
     });
-  });
+
+    if (cancelLogoutBtn) {
+      cancelLogoutBtn.addEventListener('click', () => {
+        logoutModal.classList.remove('active');
+      });
+    }
+
+    const logoutOverlay = logoutModal.querySelector('.modal-overlay');
+    if (logoutOverlay) {
+      logoutOverlay.addEventListener('click', () => {
+        logoutModal.classList.remove('active');
+      });
+    }
+
+    if (confirmLogoutBtn) {
+      confirmLogoutBtn.addEventListener('click', async () => {
+        cleanup();
+        await signOut(auth);
+        window.location.href = 'index.html';
+      });
+    }
+  }
   
   DOM.filterStatus.addEventListener('change', applyFilters);
   DOM.filterProperty.addEventListener('change', applyFilters);

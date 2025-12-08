@@ -1066,11 +1066,32 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Logout button
+  // Logout Modal functionality
   const logoutBtn = document.querySelector('.logout-button');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async function() {
-      if (confirm('Are you sure you want to logout?')) {
+  const logoutModal = document.getElementById('logoutModal');
+  const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+  const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+
+  if (logoutBtn && logoutModal) {
+    logoutBtn.addEventListener('click', () => {
+      logoutModal.classList.add('active');
+    });
+
+    if (cancelLogoutBtn) {
+      cancelLogoutBtn.addEventListener('click', () => {
+        logoutModal.classList.remove('active');
+      });
+    }
+
+    const logoutOverlay = logoutModal.querySelector('.modal-overlay');
+    if (logoutOverlay) {
+      logoutOverlay.addEventListener('click', () => {
+        logoutModal.classList.remove('active');
+      });
+    }
+
+    if (confirmLogoutBtn) {
+      confirmLogoutBtn.addEventListener('click', async () => {
         try {
           await signOut(auth);
           window.location.href = 'index.html';
@@ -1078,8 +1099,8 @@ document.addEventListener('DOMContentLoaded', function() {
           console.error("Error signing out:", error);
           showNotification("Error logging out", "error");
         }
-      }
-    });
+      });
+    }
   }
 
   // Modal close button

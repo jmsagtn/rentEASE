@@ -833,14 +833,38 @@ function setupEventListeners() {
     gridViewBtn.classList.remove('active');
   });
 
-  // Logout
-  document.getElementById('logout-btn').addEventListener('click', async () => {
-    if (confirm('Are you sure you want to logout?')) {
-      cleanup();
-      await signOut(auth);
-      window.location.href = 'index.html';
+  // Logout Modal functionality
+  const logoutBtn = document.getElementById('logout-btn');
+  const logoutModal = document.getElementById('logoutModal');
+  const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+  const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+
+  if (logoutBtn && logoutModal) {
+    logoutBtn.addEventListener('click', () => {
+      logoutModal.classList.add('active');
+    });
+
+    if (cancelLogoutBtn) {
+      cancelLogoutBtn.addEventListener('click', () => {
+        logoutModal.classList.remove('active');
+      });
     }
-  });
+
+    const logoutOverlay = logoutModal.querySelector('.modal-overlay');
+    if (logoutOverlay) {
+      logoutOverlay.addEventListener('click', () => {
+        logoutModal.classList.remove('active');
+      });
+    }
+
+    if (confirmLogoutBtn) {
+      confirmLogoutBtn.addEventListener('click', async () => {
+        cleanup();
+        await signOut(auth);
+        window.location.href = 'index.html';
+      });
+    }
+  }
 }
 
 // Add mobile menu functionality after setupEventListeners()
