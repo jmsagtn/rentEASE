@@ -1004,20 +1004,49 @@ function showError(message) {
   setTimeout(() => errorDiv.remove(), 5000);
 }
 
-// Event Listeners
-document.getElementById('logout-btn').addEventListener('click', async function() {
-  if(confirm('Are you sure you want to logout?')) {
-    try {
-      cleanupListeners();
-      await signOut(auth);
-      window.location.href = 'index.html';
-    } catch (error) {
-      console.error("Error signing out:", error);
-      alert("Error logging out. Please try again.");
-    }
-  }
-});
+// Logout Modal functionality
+const logoutBtn = document.getElementById('logout-btn');
+const logoutModal = document.getElementById('logoutModal');
+const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
 
+if (logoutBtn && logoutModal) {
+  // Open logout modal
+  logoutBtn.addEventListener('click', () => {
+    logoutModal.classList.add('active');
+  });
+
+  // Close modal on cancel
+  if (cancelLogoutBtn) {
+    cancelLogoutBtn.addEventListener('click', () => {
+      logoutModal.classList.remove('active');
+    });
+  }
+
+  // Close modal on overlay click
+  const logoutOverlay = logoutModal.querySelector('.modal-overlay');
+  if (logoutOverlay) {
+    logoutOverlay.addEventListener('click', () => {
+      logoutModal.classList.remove('active');
+    });
+  }
+
+  // Confirm logout
+  if (confirmLogoutBtn) {
+    confirmLogoutBtn.addEventListener('click', async () => {
+      try {
+        cleanupListeners();
+        await signOut(auth);
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('Error logging out. Please try again.');
+      }
+    });
+  }
+}
+
+// Event Listeners
 document.getElementById('add-property-btn').addEventListener('click', function() {
   if (!this.disabled) {
     window.location.href = 'properties.html?action=add';
