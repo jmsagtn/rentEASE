@@ -11,9 +11,17 @@
 </head>
 
 <body>
+  <!-- Mobile Menu Toggle Button -->
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">
+    <span>☰</span>
+  </button>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <div class="container">
     <!-- Sidebar Navigation -->
-    <aside>
+    <aside id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
           <img src="images/rentease.svg" alt="RentEase">
@@ -309,6 +317,23 @@
       
       <div id="tenant-details-content">
         <!-- Details will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout Confirmation Modal -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content logout-modal-content">
+      <div class="modal-header">
+        <div class="logout-icon">🚪</div>
+        <h2>Confirm Logout</h2>
+        <p>Are you sure you want to log out of your account?</p>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelLogoutBtn">Cancel</button>
+        <button class="btn btn-primary" id="confirmLogoutBtn">Yes, Logout</button>
       </div>
     </div>
   </div>

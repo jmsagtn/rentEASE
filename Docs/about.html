@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us - RentEase</title>
     <link rel="icon" type="image/png" href="images/Icon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/about.css" />
 </head>
 <body>
@@ -17,12 +20,20 @@
             <div class="logo">
                 <a href="index.html"><img src="images/rentease.svg" alt="RentEase"></a>
             </div>
-            <ul class="nav-menu">
+            
+            <!-- Add Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <ul class="nav-menu" id="navMenu">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="about.html" class="active">About</a></li>
                 <li><a href="pricing_page.html">Pricing</a></li>
-                <li><a href="index.html#contact">Contact</a></li>
-                <li><a href="#" class="nav-cta">Get Started</a></li>
+                <li><a href="contacts.html">Contact</a></li>
+                <li><a href="login.html" class="nav-cta" id="navGetStarted">Login</a></li>
             </ul>
         </div>
     </nav>
@@ -77,27 +88,27 @@
         <div class="team-grid">
             <div class="team-member">
                 <div class="team-member-image">
-                    👨‍💻
+                    <img src="images/james1.png" alt="">
                 </div>
                 <h3>James Andrew Agustin</h3>
                 <p class="role">Project Manager</p>
-                <p class="bio">Full-stack developer passionate about creating user-friendly interfaces while maintaining team collaboration and ensuring project success.</p>
+                <p class="bio">Full-stack Developer who approaches software creation with a project manager’s mindset. Combining technical expertise with rigorous lifecycle management, he ensures teams remain aligned and projects are delivered successfully on time and within scope.</p>
             </div>
             <div class="team-member">
                 <div class="team-member-image">
-                    👨‍💻
+                    <img src="images/pat1.jpg" alt="">
                 </div>
                 <h3>Romyl Patrick Sirilan</h3>
                 <p class="role">Full-stack Developer</p>
-                <p class="bio">Full-stack developer focused on building better user experience while ensuring that the system being deployed are secured and optimized.</p>
+                <p class="bio">Versatile Full-stack Developer committed to elevating user satisfaction through intuitive design, while rigorously maintaining system integrity through advanced security protocols and code optimization.</p>
             </div>
             <div class="team-member">
                 <div class="team-member-image">
-                    👨‍💻
+                    <img src="images/diter1.jpg" alt="">
                 </div>
                 <h3>Diether Jaye Catolin</h3>
                 <p class="role">Frontend Developer</p>
-                <p class="bio">Crafting beautiful and intuitive user experiences</p>
+                <p class="bio">Specializing in the design and development of immersive digital interfaces that prioritize aesthetic excellence and user-centered accessibility.</p>
             </div>
         </div>
     </section>
@@ -148,6 +159,25 @@
             } else {
                 nav.classList.remove('scrolled');
             }
+        });
+
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenuToggle.classList.toggle('active');
+            navMenu.classList.toggle('active');
+            document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+        });
+
+        // Close menu when clicking on a link
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenuToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            });
         });
 
         // Smooth scrolling

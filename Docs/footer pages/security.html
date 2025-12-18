@@ -186,6 +186,68 @@
       transform: translateX(-3px);
     }
 
+    /* Hamburger Menu Styles */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 10px;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1001;
+      background: #1a2131;
+      border-radius: 8px;
+      border: 1px solid rgba(47, 196, 178, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .hamburger:hover {
+      background: #2fc4b2;
+      border-color: #2fc4b2;
+    }
+
+    .hamburger span {
+      width: 25px;
+      height: 3px;
+      background-color: #2fc4b2;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .hamburger:hover span {
+      background-color: #1a2131;
+    }
+
+    .hamburger.active span:nth-child(1) {
+      transform: rotate(45deg) translate(8px, 8px);
+    }
+
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -7px);
+    }
+
+    /* Overlay for mobile menu */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+    }
+
     /* Main Content Styles */
     main {
       flex-grow: 1;
@@ -481,28 +543,55 @@
     }
 
     @media (max-width: 768px) {
+      .hamburger {
+        display: flex;
+      }
+
       .container {
         flex-direction: column;
       }
 
       aside {
-        width: 100%;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid rgba(47, 196, 178, 0.2);
+        position: fixed;
+        left: -280px;
+        top: 0;
+        width: 280px;
+        min-width: 280px;
+        height: 100vh;
+        z-index: 1000;
+        transition: left 0.3s ease;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+      }
+
+      aside.active {
+        left: 0;
       }
 
       main {
-        height: auto;
-        padding: 20px;
+        width: 100%;
+        height: 100vh;
+        padding: 80px 20px 20px;
+        margin-left: 0;
       }
 
       .content-header h1 {
         font-size: 28px;
       }
 
+      .content-subtitle {
+        font-size: 14px;
+      }
+
       section {
-        padding: 25px;
+        padding: 25px 20px;
+      }
+
+      section h2 {
+        font-size: 20px;
+      }
+
+      section p {
+        font-size: 14px;
       }
 
       .security-grid {
@@ -511,6 +600,41 @@
 
       .stats-grid {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hamburger {
+        top: 15px;
+        left: 15px;
+        padding: 8px;
+      }
+
+      .hamburger span {
+        width: 22px;
+        height: 2.5px;
+      }
+
+      main {
+        padding: 70px 15px 15px;
+      }
+
+      .content-header h1 {
+        font-size: 24px;
+      }
+
+      section {
+        padding: 20px 15px;
+        margin-bottom: 15px;
+      }
+
+      section h2 {
+        font-size: 18px;
+      }
+
+      .back-button {
+        padding: 10px 16px;
+        font-size: 13px;
       }
     }
 
@@ -524,9 +648,19 @@
   </style>
 </head>
 <body class="nocopy">
+  <!-- Hamburger Menu -->
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <div class="container">
     <!-- Sidebar Navigation -->
-    <aside>
+    <aside id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">RentEase</div>
         <div class="sidebar-subtitle">Documentation</div>
@@ -1106,5 +1240,36 @@
       </section>
     </main>
   </div>
+
+  <script>
+    // Hamburger menu toggle
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    hamburger.addEventListener('click', function() {
+      hamburger.classList.toggle('active');
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', function() {
+      hamburger.classList.remove('active');
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+    });
+
+    // Close menu when clicking a link
+    const sidebarLinks = sidebar.querySelectorAll('a');
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          hamburger.classList.remove('active');
+          sidebar.classList.remove('active');
+          overlay.classList.remove('active');
+        }
+      });
+    });
+  </script>
 </body>
 </html>

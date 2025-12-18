@@ -1,4 +1,5 @@
- * {
+/* docs/css/rent-tracker.css */
+* {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -569,61 +570,7 @@
       color: #9ca3af;
     }
 
-    /* Responsive Design */
-    @media (max-width: 1400px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-
-      aside {
-        width: 100%;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid rgba(47, 196, 178, 0.2);
-      }
-
-      main {
-        height: auto;
-        padding: 20px;
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-      }
-
-      .filter-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .filter-select,
-      .search-box {
-        width: 100%;
-      }
-
-      table {
-        font-size: 12px;
-      }
-
-      th, td {
-        padding: 12px 15px;
-      }
-    }
-
-
-        /* Modal Styles */
+    /* Modal Styles */
     .custom-modal-overlay {
       position: fixed;
       top: 0;
@@ -803,3 +750,547 @@
       font-size: 16px;
       font-weight: 700;
     }
+
+
+    /* Add these styles to your existing rent-tracker.css file */
+
+/* Email Type Button Styles */
+.action-btn_email {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.action-btn_email:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Email Type Selection Modal Buttons */
+.email-type-btn {
+  padding: 14px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+
+.email-type-btn:hover {
+  transform: translateX(5px);
+}
+
+.email-type-btn:active {
+  transform: translateX(5px) scale(0.98);
+}
+
+/* Action Buttons Container - Allow wrapping for more buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Make buttons slightly smaller to fit better */
+@media (max-width: 1200px) {
+  .action-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* Loading state for email buttons */
+.action-btn_email.loading {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.action-btn_email.loading::after {
+  content: '...';
+  animation: ellipsis 1.5s infinite;
+}
+
+@keyframes ellipsis {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+/* Mobile Navigation Toggle */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 10000;
+  background: linear-gradient(135deg, #2fc4b2 0%, #107266 100%);
+  border: none;
+  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(47, 196, 178, 0.3);
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.mobile-menu-toggle:active {
+  transform: scale(0.95);
+}
+
+.mobile-menu-toggle span {
+  display: block;
+  line-height: 1;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  backdrop-filter: blur(4px);
+}
+
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: flex !important;
+  }
+
+  aside {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 9999;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+  }
+
+  aside.mobile-open {
+    left: 0;
+  }
+
+  main {
+    width: 100%;
+    padding: 80px 16px 20px;
+    margin-left: 0;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .page-title-section h1 {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 20px;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .stat-number {
+    font-size: 24px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-select {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .search-box {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .payment-table-card {
+    border-radius: 12px;
+  }
+
+  .table-header {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .table-title {
+    font-size: 16px;
+  }
+
+  /* Mobile Table - Horizontal Scroll */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  thead, tbody, tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  th {
+    padding: 12px 10px;
+    font-size: 11px;
+  }
+
+  td {
+    padding: 12px 10px;
+    font-size: 12px;
+  }
+
+  .tenant-info {
+    gap: 8px;
+  }
+
+  .tenant-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    min-width: 32px;
+  }
+
+  .tenant-name {
+    font-size: 13px;
+  }
+
+  .tenant-property {
+    font-size: 11px;
+  }
+
+  .amount {
+    font-size: 14px;
+  }
+
+  .status-badge {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .status-edit-icon {
+    font-size: 10px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .action-btn {
+    padding: 8px 10px;
+    font-size: 11px;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Modal Responsive */
+  .custom-modal {
+    max-width: 95%;
+    width: 95%;
+  }
+
+  .modal-header {
+    padding: 20px;
+  }
+
+  .modal-icon {
+    font-size: 24px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-body p {
+    font-size: 14px;
+  }
+
+  .modal-btn {
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+
+  .modal-btn-group {
+    flex-direction: column;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .detail-value {
+    text-align: left;
+    font-size: 13px;
+  }
+
+  .detail-label {
+    font-size: 13px;
+  }
+
+  .email-type-btn,
+  .status-type-btn {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  main {
+    padding: 70px 12px 16px;
+  }
+
+  .page-title-section h1 {
+    font-size: 20px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .stats-grid {
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .stat-number {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
+  .filter-bar {
+    padding: 14px;
+  }
+
+  .filter-label {
+    font-size: 11px;
+  }
+
+  .filter-select,
+  .search-input {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .table-header {
+    padding: 14px;
+  }
+
+  .table-title {
+    font-size: 15px;
+  }
+
+  .table-count {
+    font-size: 12px;
+  }
+
+  th {
+    padding: 10px 8px;
+    font-size: 10px;
+  }
+
+  td {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
+  .tenant-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .tenant-name {
+    font-size: 12px;
+  }
+
+  .tenant-property {
+    font-size: 10px;
+  }
+
+  .amount {
+    font-size: 13px;
+  }
+
+  .status-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .action-btn {
+    padding: 8px;
+    font-size: 10px;
+  }
+
+  .modal-header {
+    padding: 18px;
+  }
+
+  .modal-icon {
+    font-size: 22px;
+  }
+
+  .modal-title {
+    font-size: 16px;
+  }
+
+  .modal-body {
+    padding: 18px;
+  }
+
+  .modal-body p {
+    font-size: 13px;
+  }
+
+  .modal-btn {
+    padding: 10px 18px;
+    font-size: 12px;
+  }
+
+  .detail-row {
+    padding: 8px;
+  }
+
+  .detail-label,
+  .detail-value {
+    font-size: 12px;
+  }
+
+  .email-type-btn,
+  .status-type-btn {
+    padding: 10px 14px;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 900px) and (orientation: landscape) {
+  aside {
+    width: 250px;
+  }
+
+  main {
+    padding: 20px 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Plan Badge Styles - Add this section */
+.plan-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+.plan-freemium { 
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.plan-premium { 
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.plan-platinum { 
+  background: #fff3e0;
+  color: #e65100;
+}
